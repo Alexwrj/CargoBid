@@ -1,0 +1,6 @@
+node_modules/
+dist/
+coverage/
+AI_USAGE.md
+public/mockServiceWorker.js
+openapi.auctions.v1.json

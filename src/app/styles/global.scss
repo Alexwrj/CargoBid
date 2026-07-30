@@ -1,0 +1,69 @@
+$minimum-viewport-width: 20rem;
+$font-stack:
+  Inter,
+  ui-sans-serif,
+  system-ui,
+  -apple-system,
+  BlinkMacSystemFont,
+  'Segoe UI',
+  sans-serif;
+
+:root {
+  color: #172033;
+  background: #f4f6fa;
+  font-family: $font-stack;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --color-surface: #ffffff;
+  --color-text: #172033;
+  --color-muted: #5e687c;
+  --color-accent: #3157d5;
+  --color-accent-strong: #203fa8;
+  --color-accent-soft: #e9edfb;
+  --color-border: #dce1ea;
+  --color-code-surface: #eef1f6;
+  --color-error: #a32135;
+  --color-error-border: #e7aab4;
+  --color-focus: #f2a93b;
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2rem;
+  --content-width: 72rem;
+  --shadow-page: 0 1rem 3rem rgb(31 43 72 / 8%);
+}
+
+* {
+  &,
+  &::before,
+  &::after {
+    box-sizing: border-box;
+  }
+}
+
+html {
+  min-width: $minimum-viewport-width;
+  color-scheme: light;
+}
+
+body {
+  min-width: $minimum-viewport-width;
+  min-height: 100vh;
+  margin: 0;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 0.1875rem solid var(--color-focus);
+  outline-offset: 0.1875rem;
+}

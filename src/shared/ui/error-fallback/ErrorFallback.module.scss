@@ -1,0 +1,12 @@
+@use '../../styles/mixins';
+
+.error-fallback {
+  @include mixins.technical-state(
+    $border-color: var(--color-error-border),
+    $text-color: var(--color-error)
+  );
+}
+
+.error-title {
+  @include mixins.display-heading;
+}
