@@ -1,11 +1,15 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
+import '@fontsource-variable/jetbrains-mono';
+import '@fontsource-variable/manrope';
+
 import { AppProviders } from '@/app/providers/AppProviders';
 import { createQueryClient } from '@/app/providers/query-client';
 import { createAppRouter } from '@/app/router/create-app-router';
-import '@/app/styles/global.scss';
 import { ErrorFallback } from '@/shared/ui/error-fallback/ErrorFallback';
+import '@/shared/ui/tokens/tokens.scss';
+import '@/app/styles/global.scss';
 
 const rootElement = document.getElementById('root');
 

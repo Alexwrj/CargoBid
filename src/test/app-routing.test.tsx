@@ -54,5 +54,18 @@ describe('application routing', () => {
       await screen.findByRole('heading', { name: 'Детали аукциона' }),
     ).toBeInTheDocument();
     expect(screen.getByText('demo-auction')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('link', { name: 'Пример ставки' }));
+
+    expect(
+      await screen.findByRole('heading', { name: 'Установка ставки' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Пример ставки' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(
+      screen.getByRole('link', { name: 'Пример деталей' }),
+    ).not.toHaveAttribute('aria-current');
   });
 });

@@ -1,0 +1,77 @@
+@use '../styles/control';
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1-5);
+  min-width: 0;
+}
+
+.label {
+  @include control.label;
+}
+
+.control {
+  @include control.frame;
+
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3-5);
+}
+
+.invalid {
+  border-color: var(--color-danger);
+
+  &:focus-within {
+    border-color: var(--color-danger);
+    box-shadow: 0 0 0 0.1875rem
+      color-mix(in srgb, var(--color-danger) 16%, transparent);
+  }
+}
+
+.input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-control);
+
+  &::placeholder {
+    color: var(--color-text-tertiary);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+
+  &[type='search'] {
+    &::-webkit-search-cancel-button {
+      appearance: none;
+    }
+  }
+}
+
+.adornment {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  color: var(--color-text-tertiary);
+}
+
+.description,
+.error {
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-control);
+}
+
+.description {
+  color: var(--color-text-secondary);
+}
+
+.error {
+  color: var(--color-danger);
+  font-weight: var(--font-weight-semibold);
+}

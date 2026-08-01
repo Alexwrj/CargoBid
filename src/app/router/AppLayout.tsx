@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigation } from 'react-router-dom';
+import { Link, NavLink, Outlet, useNavigation } from 'react-router-dom';
 
 import { LoadingFallback } from '@/shared/ui/loading-fallback/LoadingFallback';
 
@@ -8,7 +8,8 @@ const navigationItems = [
   { label: 'Аукционы', to: '/auctions' },
   { label: 'Пример деталей', to: '/auctions/demo-auction' },
   { label: 'Пример ставки', to: '/auctions/demo-auction/bet' },
-] as const;
+  ...(import.meta.env.DEV ? [{ label: 'UI kit', to: '/ui-kit' }] : []),
+];
 
 export function AppLayout() {
   const navigation = useNavigation();
@@ -20,13 +21,13 @@ export function AppLayout() {
       </a>
 
       <header className={styles.appHeader}>
-        <NavLink
+        <Link
           aria-label="CargoBid — главная"
           className={styles.brand}
           to="/auctions"
         >
           CargoBid
-        </NavLink>
+        </Link>
         <nav aria-label="Основная навигация">
           <ul className={styles.navigation}>
             {navigationItems.map(({ label, to }) => (
@@ -37,7 +38,7 @@ export function AppLayout() {
                       ? `${styles.navigationLink} ${styles.isActive}`
                       : styles.navigationLink
                   }
-                  end={to === '/auctions'}
+                  end
                   to={to}
                 >
                   {label}

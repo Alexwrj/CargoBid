@@ -2,8 +2,8 @@
 
 .error-fallback {
   @include mixins.technical-state(
-    $border-color: var(--color-error-border),
-    $text-color: var(--color-error)
+    $border-color: var(--color-danger-border),
+    $text-color: var(--color-danger)
   );
 }
 

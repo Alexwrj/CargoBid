@@ -1,4 +1,4 @@
-$mobile-breakpoint: 45rem;
+@use '../../shared/ui/tokens/breakpoints';
 
 .app-shell {
   min-height: 100vh;
@@ -9,17 +9,17 @@ $mobile-breakpoint: 45rem;
   z-index: 10;
   top: var(--space-2);
   left: var(--space-2);
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  background: var(--color-text);
-  color: var(--color-surface);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-small);
+  background: var(--color-surface-inverse);
+  color: var(--color-text-inverse);
   transform: translateY(-200%);
   &:focus {
     transform: translateY(0);
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    transition: transform 120ms ease-out;
+    transition: transform var(--duration-fast) var(--easing-standard);
   }
 }
 
@@ -28,19 +28,21 @@ $mobile-breakpoint: 45rem;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
+  min-height: var(--app-header-height);
   padding: var(--space-2)
-    max(var(--space-2), calc((100% - var(--content-width)) / 2));
-  border-bottom: 0.0625rem solid var(--color-border);
-  background: var(--color-surface);
+    max(var(--space-4), calc((100% - var(--content-width)) / 2));
+  border-bottom: 0.0625rem solid var(--color-border-subtle);
+  background: var(--color-surface-inverse);
+  color: var(--color-text-inverse);
 
-  @media (max-width: $mobile-breakpoint) {
+  @media (max-width: breakpoints.$tablet) {
     align-items: flex-start;
     flex-direction: column;
   }
 }
 
 .brand {
-  color: var(--color-accent-strong);
+  color: var(--color-text-inverse);
   font-size: 1.25rem;
   font-weight: 800;
   text-decoration: none;
@@ -54,27 +56,27 @@ $mobile-breakpoint: 45rem;
   padding: 0;
   list-style: none;
 
-  @media (max-width: $mobile-breakpoint) {
+  @media (max-width: breakpoints.$tablet) {
     flex-direction: column;
   }
 }
 
 .navigation-link {
   display: inline-block;
-  padding: 0.625rem 0.75rem;
-  border-radius: 0.5rem;
-  color: var(--color-muted);
-  font-weight: 600;
+  padding: var(--space-2-5) var(--space-3);
+  border-radius: var(--radius-small);
+  color: var(--color-text-inverse-muted);
+  font-weight: var(--font-weight-semibold);
   text-decoration: none;
   &:hover,
   &.is-active {
-    background: var(--color-accent-soft);
-    color: var(--color-accent-strong);
+    background: var(--palette-ink-800);
+    color: var(--color-text-inverse);
   }
 }
 
 .app-main {
-  width: min(calc(100% - 2 * var(--space-2)), var(--content-width));
+  width: min(calc(100% - 2 * var(--space-4)), var(--content-width));
   margin: 0 auto;
   padding: clamp(2rem, 6vw, 5rem) 0;
 }

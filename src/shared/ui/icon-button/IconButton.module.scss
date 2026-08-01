@@ -1,0 +1,19 @@
+.icon-button {
+  flex: 0 0 auto;
+  padding: 0;
+}
+
+.small {
+  width: var(--control-height-small);
+  height: var(--control-height-small);
+}
+
+.medium {
+  width: var(--control-height-medium);
+  height: var(--control-height-medium);
+}
+
+.large {
+  width: var(--control-height-action);
+  height: var(--control-height-action);
+}

@@ -1,0 +1,77 @@
+@use '../styles/control';
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1-5);
+}
+
+.label {
+  @include control.label;
+}
+
+.group {
+  @include control.frame;
+
+  display: grid;
+  grid-template-columns: 1fr var(--control-height-medium) var(
+      --control-height-medium
+    );
+  min-height: var(--control-height-action);
+  overflow: hidden;
+}
+
+.invalid {
+  border-color: var(--color-danger);
+}
+
+.input {
+  width: 100%;
+  min-width: 0;
+  padding: 0 var(--space-3-5);
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-metric);
+  font-size: 1.25rem;
+  font-weight: var(--font-weight-bold);
+
+  &::placeholder {
+    color: var(--color-text-tertiary);
+  }
+}
+
+.step-button {
+  border: 0;
+  border-left: 0.0625rem solid var(--color-border-default);
+  background: var(--color-surface-default);
+  color: var(--color-text-primary);
+  font-size: 1.25rem;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--color-surface-subtle);
+  }
+
+  &:disabled {
+    color: var(--color-text-tertiary);
+    cursor: not-allowed;
+  }
+}
+
+.description,
+.error {
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-control);
+}
+
+.description {
+  color: var(--color-text-secondary);
+}
+
+.error {
+  color: var(--color-danger);
+  font-weight: var(--font-weight-semibold);
+}

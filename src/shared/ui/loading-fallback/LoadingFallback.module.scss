@@ -1,5 +1,5 @@
 @use '../../styles/mixins';
 
 .loading-fallback {
-  @include mixins.technical-state;
+  @include mixins.technical-state($border-color: var(--color-border-default));
 }

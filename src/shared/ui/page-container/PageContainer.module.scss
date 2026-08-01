@@ -3,17 +3,17 @@
 .page-container {
   max-width: 48rem;
   padding: clamp(1.5rem, 4vw, 3rem);
-  border: 0.0625rem solid var(--color-border);
-  border-radius: 1rem;
-  background: var(--color-surface);
-  box-shadow: var(--shadow-page);
+  border: 0.0625rem solid var(--color-border-default);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-default);
+  box-shadow: var(--shadow-card);
 }
 
 .page-eyebrow {
   margin: 0 0 var(--space-1);
   color: var(--color-accent);
-  font-size: 0.8125rem;
-  font-weight: 800;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-extrabold);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -23,19 +23,19 @@
 }
 
 .page-content {
-  margin-top: var(--space-3);
-  color: var(--color-muted);
+  margin-top: var(--space-6);
+  color: var(--color-text-secondary);
   font-size: 1.0625rem;
   line-height: 1.65;
   p {
-    margin: 0 0 var(--space-2);
+    margin: 0 0 var(--space-4);
   }
 
   code {
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
-    background: var(--color-code-surface);
-    color: var(--color-text);
+    background: var(--color-surface-subtle);
+    color: var(--color-text-primary);
     font-size: 0.95em;
   }
 }

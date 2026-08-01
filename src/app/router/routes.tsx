@@ -43,6 +43,18 @@ export const routes: RouteObject[] = [
           return { Component: PlaceBetPage };
         },
       },
+      ...(import.meta.env.DEV
+        ? [
+            {
+              path: 'ui-kit',
+              lazy: async () => {
+                const { UiKitPage } = await import('@/pages/ui-kit/UiKitPage');
+
+                return { Component: UiKitPage };
+              },
+            },
+          ]
+        : []),
       {
         path: '*',
         lazy: async () => {

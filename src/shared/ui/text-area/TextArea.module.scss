@@ -1,0 +1,45 @@
+@use '../styles/control';
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1-5);
+}
+
+.label {
+  @include control.label;
+}
+
+.text-area {
+  @include control.frame;
+
+  min-height: 6.5rem;
+  padding: var(--space-3-5);
+  outline: 0;
+  font-size: var(--font-size-control);
+  line-height: var(--line-height-body);
+  resize: vertical;
+
+  &::placeholder {
+    color: var(--color-text-tertiary);
+  }
+}
+
+.invalid {
+  border-color: var(--color-danger);
+}
+
+.description,
+.error {
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-control);
+}
+
+.description {
+  color: var(--color-text-secondary);
+}
+
+.error {
+  color: var(--color-danger);
+  font-weight: var(--font-weight-semibold);
+}

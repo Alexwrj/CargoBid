@@ -198,17 +198,53 @@ generated DTO и содержат только обязательный конт
 
 ## Маршруты и стили
 
-| URL                          | Назначение                     |
-| ---------------------------- | ------------------------------ |
-| `/`                          | Перенаправление на `/auctions` |
-| `/auctions`                  | Placeholder списка аукционов   |
-| `/auctions/:auctionUuid`     | Placeholder деталей аукциона   |
-| `/auctions/:auctionUuid/bet` | Placeholder установки ставки   |
-| любой неизвестный URL        | Страница 404                   |
+| URL                          | Назначение                               |
+| ---------------------------- | ---------------------------------------- |
+| `/`                          | Перенаправление на `/auctions`           |
+| `/auctions`                  | Placeholder списка аукционов             |
+| `/auctions/:auctionUuid`     | Placeholder деталей аукциона             |
+| `/auctions/:auctionUuid/bet` | Placeholder установки ставки             |
+| `/ui-kit`                    | Каталог UI-компонентов, только dev-режим |
+| любой неизвестный URL        | Страница 404                             |
 
 Страницы загружаются лениво. Компонентные стили используют colocated SCSS
 Modules: selectors записываются в kebab-case, а TSX получает camelCase exports.
-Глобальный SCSS содержит только tokens, reset и базовые element rules.
+Глобальный SCSS содержит только reset и базовые element rules; дизайн-токены
+подключаются отдельным глобальным файлом `src/shared/ui/tokens/tokens.scss`.
+
+## Дизайн-токены и UI kit
+
+Локальный UI kit построен без CSS-фреймворка. Интерактивные headless-примитивы
+используют `@base-ui/react`, а внешний вид полностью принадлежит colocated SCSS
+Modules. Manrope Variable используется для интерфейсного текста, JetBrains Mono
+Variable — для цен, таймеров и других метрик; оба шрифта поставляются локально
+через `@fontsource-variable`.
+
+Токены разделены по назначению:
+
+- primitive palette хранит исходные цвета;
+- semantic tokens описывают роли текста, поверхностей, границ, действий и
+  состояний;
+- component geometry задаёт высоты контролов, радиусы, тени и размеры layout.
+
+Компоненты используют semantic/component tokens и не зависят напрямую от
+hex-значений. Цвет декоративного акцента отделён от более тёмного цвета primary
+action, чтобы сохранить характер макета и читаемый контраст интерактивного
+текста.
+
+В `src/shared/ui` доступны:
+
+- `Button`, `IconButton`, `Badge`, `FilterChip`;
+- `TextField`, `SearchField`, `TextArea`, `NumberField`;
+- `SelectField`, `ComboboxField`, `Switch`, `Tabs`;
+- `ResponsiveDialog`, `Tooltip`, `Pagination`;
+- `Skeleton`, `EmptyState`, `ErrorState`.
+
+`ResponsiveDialog` отображается как модальное окно на широком экране и занимает
+весь viewport на мобильном. Каталог `/ui-kit` лениво подключается только при
+`import.meta.env.DEV` и не попадает в production router. Product-компоненты
+аукциона намеренно не добавлены в `shared/ui`: они появятся в продуктовых слоях,
+когда начнётся реализация экранов.
 
 ## Границы этапа 2
 

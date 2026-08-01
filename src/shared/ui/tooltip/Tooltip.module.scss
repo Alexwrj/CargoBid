@@ -1,0 +1,29 @@
+.positioner {
+  z-index: 70;
+}
+
+.popup {
+  max-width: 16rem;
+  padding: var(--space-1-5) var(--space-2);
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-body-small);
+  line-height: var(--line-height-control);
+  background: var(--color-surface-inverse);
+  border-radius: var(--radius-badge);
+  box-shadow: var(--shadow-card);
+  transform-origin: var(--transform-origin);
+  transition:
+    transform var(--duration-fast) var(--easing-standard),
+    opacity var(--duration-fast) var(--easing-standard);
+
+  &[data-starting-style],
+  &[data-ending-style] {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+.arrow {
+  display: flex;
+  color: var(--color-surface-inverse);
+}

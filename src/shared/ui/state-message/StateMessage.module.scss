@@ -1,0 +1,66 @@
+@use '../tokens/breakpoints';
+
+.state-message {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 9rem;
+  padding: var(--space-6);
+  border: 0.0625rem solid var(--color-border-default);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-default);
+}
+
+.danger {
+  border-color: var(--color-danger-border);
+}
+
+.icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-secondary);
+
+  .danger & {
+    background: var(--color-danger-surface);
+    color: var(--color-danger);
+  }
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.title,
+.description {
+  margin: 0;
+}
+
+.title {
+  font-size: var(--font-size-control);
+  font-weight: var(--font-weight-extrabold);
+}
+
+.description {
+  margin-top: var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+.action {
+  flex: 0 0 auto;
+}
+
+@media (max-width: breakpoints.$tablet) {
+  .state-message {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

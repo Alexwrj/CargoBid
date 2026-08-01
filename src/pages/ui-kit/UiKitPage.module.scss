@@ -1,0 +1,211 @@
+@use '../../shared/ui/tokens/breakpoints';
+
+.catalogue {
+  display: grid;
+  gap: var(--space-6);
+  padding-block: var(--space-6) var(--space-9);
+}
+
+.hero {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-7);
+  color: var(--color-text-inverse);
+  background: var(--color-surface-inverse);
+  border-radius: var(--radius-shell);
+  box-shadow: var(--shadow-shell);
+}
+
+.title,
+.lead,
+.section-title,
+.section-description,
+.type-scale p,
+.dialog-copy {
+  margin: 0;
+}
+
+.title {
+  font-size: clamp(var(--font-size-title), 4vw, var(--font-size-display));
+  font-weight: var(--font-weight-extrabold);
+  line-height: var(--line-height-tight);
+}
+
+.lead {
+  max-width: 46rem;
+  color: var(--color-text-inverse-muted);
+  line-height: var(--line-height-body);
+}
+
+.section {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  background: var(--color-surface-default);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.section-header {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.section-title {
+  font-size: var(--font-size-title-small);
+  font-weight: var(--font-weight-extrabold);
+  line-height: var(--line-height-tight);
+}
+
+.section-description {
+  max-width: 48rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+.swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: var(--space-3);
+}
+
+.swatch {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  font-size: var(--font-size-body);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-small);
+
+  span {
+    height: 3rem;
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-small);
+  }
+
+  code {
+    overflow-wrap: anywhere;
+    color: var(--color-text-secondary);
+    font-family: var(--font-family-metric);
+    font-size: var(--font-size-caption);
+  }
+}
+
+.swatch-ink {
+  background: var(--color-text-primary);
+}
+
+.swatch-accent {
+  background: var(--color-accent);
+}
+
+.swatch-action {
+  background: var(--color-action-primary);
+}
+
+.swatch-success {
+  background: var(--color-success);
+}
+
+.swatch-danger {
+  background: var(--color-danger);
+}
+
+.swatch-surface {
+  background: var(--color-surface-subtle);
+}
+
+.type-scale {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.display-sample {
+  font-size: clamp(var(--font-size-metric), 5vw, var(--font-size-display));
+  font-weight: var(--font-weight-extrabold);
+  line-height: var(--line-height-tight);
+}
+
+.title-sample {
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
+}
+
+.body-sample {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+}
+
+.metric-sample {
+  font-family: var(--font-family-metric);
+  font-size: var(--font-size-metric);
+  font-weight: var(--font-weight-bold);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.form-wide {
+  grid-column: 1 / -1;
+}
+
+.navigation-demo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dialog-copy {
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-body);
+}
+
+.skeleton-card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--color-surface-subtle);
+  border-radius: var(--radius-small);
+}
+
+.state-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+@media (max-width: breakpoints.$tablet) {
+  .catalogue {
+    gap: var(--space-4);
+    padding-block: var(--space-4);
+  }
+
+  .hero,
+  .section {
+    padding: var(--space-4);
+  }
+
+  .form-grid,
+  .state-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .form-wide {
+    grid-column: auto;
+  }
+}
