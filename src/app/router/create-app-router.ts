@@ -1,15 +1,39 @@
 import {
-  createBrowserRouter,
-  createMemoryRouter,
-  type InitialEntry,
-} from 'react-router-dom';
+  createMemoryHistory,
+  createRouter,
+  type RouterHistory,
+} from '@tanstack/react-router';
 
-import { routes } from './routes';
+import { LoadingFallback } from '@/shared/ui/loading-fallback/LoadingFallback';
 
-export function createAppRouter() {
-  return createBrowserRouter(routes);
+import { routeTree } from './routes';
+
+function createCargoBidRouter(
+  history?: RouterHistory,
+  scrollRestoration = true,
+) {
+  return createRouter({
+    defaultPendingComponent: LoadingFallback,
+    defaultPendingMs: 0,
+    defaultPreload: 'intent',
+    history,
+    routeTree,
+    scrollRestoration,
+  });
 }
 
-export function createTestRouter(initialEntries: InitialEntry[]) {
-  return createMemoryRouter(routes, { initialEntries });
+export function createAppRouter() {
+  return createCargoBidRouter();
+}
+
+export function createTestRouter(initialEntries: string[]) {
+  return createCargoBidRouter(createMemoryHistory({ initialEntries }), false);
+}
+
+export type AppRouter = ReturnType<typeof createCargoBidRouter>;
+
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: AppRouter;
+  }
 }

@@ -1,9 +1,9 @@
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
-import { RouterProvider, type RouterProviderProps } from 'react-router-dom';
+import { RouterProvider, type AnyRouter } from '@tanstack/react-router';
 
 interface AppProvidersProps {
   queryClient: QueryClient;
-  router: RouterProviderProps['router'];
+  router: AnyRouter;
 }
 
 export function AppProviders({ queryClient, router }: AppProvidersProps) {

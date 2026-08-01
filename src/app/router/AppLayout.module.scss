@@ -1,5 +1,3 @@
-@use '../../shared/ui/tokens/breakpoints';
-
 .app-shell {
   min-height: 100vh;
 }
@@ -34,11 +32,6 @@
   border-bottom: 0.0625rem solid var(--color-border-subtle);
   background: var(--color-surface-inverse);
   color: var(--color-text-inverse);
-
-  @media (max-width: breakpoints.$tablet) {
-    align-items: flex-start;
-    flex-direction: column;
-  }
 }
 
 .brand {
@@ -55,10 +48,6 @@
   margin: 0;
   padding: 0;
   list-style: none;
-
-  @media (max-width: breakpoints.$tablet) {
-    flex-direction: column;
-  }
 }
 
 .navigation-link {

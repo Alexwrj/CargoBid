@@ -1,9 +1,11 @@
-import { useParams } from 'react-router-dom';
+import { getRouteApi } from '@tanstack/react-router';
 
 import { PageContainer } from '@/shared/ui/page-container/PageContainer';
 
+const routeApi = getRouteApi('/auctions/$auctionUuid');
+
 export function AuctionDetailsPage() {
-  const { auctionUuid } = useParams<'auctionUuid'>();
+  const { auctionUuid } = routeApi.useParams();
 
   return (
     <PageContainer

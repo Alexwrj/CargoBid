@@ -1,69 +1,73 @@
-import { redirect, type RouteObject } from 'react-router-dom';
+import {
+  createRootRoute,
+  createRoute,
+  lazyRouteComponent,
+  redirect,
+} from '@tanstack/react-router';
 
 import { LoadingFallback } from '@/shared/ui/loading-fallback/LoadingFallback';
 
 import { AppLayout } from './AppLayout';
 import { RouteErrorPage } from './RouteErrorPage';
 
-export const routes: RouteObject[] = [
-  {
-    path: '/',
-    element: <AppLayout />,
-    errorElement: <RouteErrorPage />,
-    HydrateFallback: LoadingFallback,
-    children: [
-      {
-        index: true,
-        loader: () => redirect('/auctions'),
-      },
-      {
-        path: 'auctions',
-        lazy: async () => {
-          const { AuctionsPage } =
-            await import('@/pages/auctions/AuctionsPage');
+const rootRoute = createRootRoute({
+  component: AppLayout,
+  errorComponent: RouteErrorPage,
+  notFoundComponent: lazyRouteComponent(
+    () => import('@/pages/not-found/NotFoundPage'),
+    'NotFoundPage',
+  ),
+  pendingComponent: LoadingFallback,
+});
 
-          return { Component: AuctionsPage };
-        },
-      },
-      {
-        path: 'auctions/:auctionUuid',
-        lazy: async () => {
-          const { AuctionDetailsPage } =
-            await import('@/pages/auction-details/AuctionDetailsPage');
-
-          return { Component: AuctionDetailsPage };
-        },
-      },
-      {
-        path: 'auctions/:auctionUuid/bet',
-        lazy: async () => {
-          const { PlaceBetPage } =
-            await import('@/pages/place-bet/PlaceBetPage');
-
-          return { Component: PlaceBetPage };
-        },
-      },
-      ...(import.meta.env.DEV
-        ? [
-            {
-              path: 'ui-kit',
-              lazy: async () => {
-                const { UiKitPage } = await import('@/pages/ui-kit/UiKitPage');
-
-                return { Component: UiKitPage };
-              },
-            },
-          ]
-        : []),
-      {
-        path: '*',
-        lazy: async () => {
-          const { NotFoundPage } =
-            await import('@/pages/not-found/NotFoundPage');
-
-          return { Component: NotFoundPage };
-        },
-      },
-    ],
+const indexRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/',
+  beforeLoad: () => {
+    redirect({ throw: true, to: '/auctions' });
   },
-];
+});
+
+const auctionsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/auctions',
+  component: lazyRouteComponent(
+    () => import('@/pages/auctions/AuctionsPage'),
+    'AuctionsPage',
+  ),
+});
+
+const auctionDetailsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/auctions/$auctionUuid',
+  component: lazyRouteComponent(
+    () => import('@/pages/auction-details/AuctionDetailsPage'),
+    'AuctionDetailsPage',
+  ),
+});
+
+const placeBetRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/auctions/$auctionUuid/bet',
+  component: lazyRouteComponent(
+    () => import('@/pages/place-bet/PlaceBetPage'),
+    'PlaceBetPage',
+  ),
+});
+
+const uiKitRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/ui-kit',
+  component: lazyRouteComponent(
+    () => import('@/pages/ui-kit/UiKitPage'),
+    'UiKitPage',
+  ),
+});
+
+export const routeTree = rootRoute.addChildren([
+  indexRoute,
+  auctionsRoute,
+  auctionDetailsRoute,
+  placeBetRoute,
+  ...(import.meta.env.DEV ? [uiKitRoute] : []),
+]);

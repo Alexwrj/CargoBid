@@ -13,23 +13,23 @@ function QueryClientProbe() {
 }
 
 describe('application providers', () => {
-  it('exposes the supplied QueryClient to application components', () => {
+  it('exposes the supplied QueryClient to application components', async () => {
     const queryClient = createQueryClient({ isTest: true });
     queryClient.setQueryData(['provider-probe'], 'connected');
 
-    renderWithProviders(<QueryClientProbe />, { queryClient });
+    await renderWithProviders(<QueryClientProbe />, { queryClient });
 
     expect(screen.getByText('connected')).toBeInTheDocument();
     expect(queryClient.getDefaultOptions().queries?.retry).toBe(false);
   });
 
   it('creates an isolated QueryClient for every test render', async () => {
-    const firstRender = renderApp();
-    await screen.findByRole('heading', { name: 'Грузовые аукционы' });
+    const firstRender = await renderApp();
+    await screen.findByRole('heading', { name: 'Аукционы' });
     firstRender.unmount();
 
-    const secondRender = renderApp();
-    await screen.findByRole('heading', { name: 'Грузовые аукционы' });
+    const secondRender = await renderApp();
+    await screen.findByRole('heading', { name: 'Аукционы' });
 
     expect(firstRender.queryClient).not.toBe(secondRender.queryClient);
   });

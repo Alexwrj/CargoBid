@@ -1,21 +1,20 @@
 import { screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
 import { renderApp } from './render';
 
 describe('application routing', () => {
   it('redirects the root route to the auctions page', async () => {
-    const { router } = renderApp({ route: '/' });
+    const { router } = await renderApp({ route: '/' });
 
     expect(
-      await screen.findByRole('heading', { name: 'Грузовые аукционы' }),
+      await screen.findByRole('heading', { name: 'Аукционы' }),
     ).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/auctions');
   });
 
   it('passes auctionUuid to the auction details page', async () => {
-    renderApp({ route: '/auctions/auction-42' });
+    await renderApp({ route: '/auctions/auction-42' });
 
     expect(
       await screen.findByRole('heading', { name: 'Детали аукциона' }),
@@ -24,7 +23,7 @@ describe('application routing', () => {
   });
 
   it('passes auctionUuid to the place bet page', async () => {
-    renderApp({ route: '/auctions/auction-42/bet' });
+    await renderApp({ route: '/auctions/auction-42/bet' });
 
     expect(
       await screen.findByRole('heading', { name: 'Установка ставки' }),
@@ -33,39 +32,27 @@ describe('application routing', () => {
   });
 
   it('shows the not found page for an unknown URL', async () => {
-    renderApp({ route: '/unknown-route' });
+    await renderApp({ route: '/unknown-route' });
 
     expect(
       await screen.findByRole('heading', { name: 'Страница не найдена' }),
     ).toBeInTheDocument();
   });
 
-  it('provides accessible navigation for checking the routes', async () => {
-    const user = userEvent.setup();
-    renderApp();
+  it('shows only the production auction navigation item', async () => {
+    await renderApp();
 
-    expect(
-      await screen.findByRole('navigation', { name: 'Основная навигация' }),
-    ).toBeInTheDocument();
+    const navigation = await screen.findByRole('navigation', {
+      name: 'Основная навигация',
+    });
 
-    await user.click(screen.getByRole('link', { name: 'Пример деталей' }));
-
-    expect(
-      await screen.findByRole('heading', { name: 'Детали аукциона' }),
-    ).toBeInTheDocument();
-    expect(screen.getByText('demo-auction')).toBeInTheDocument();
-
-    await user.click(screen.getByRole('link', { name: 'Пример ставки' }));
-
-    expect(
-      await screen.findByRole('heading', { name: 'Установка ставки' }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Пример ставки' })).toHaveAttribute(
+    expect(navigation).toHaveTextContent('Аукционы');
+    expect(navigation).not.toHaveTextContent('Пример деталей');
+    expect(navigation).not.toHaveTextContent('Пример ставки');
+    expect(navigation).not.toHaveTextContent('UI kit');
+    expect(screen.getByRole('link', { name: 'Аукционы' })).toHaveAttribute(
       'aria-current',
       'page',
     );
-    expect(
-      screen.getByRole('link', { name: 'Пример деталей' }),
-    ).not.toHaveAttribute('aria-current');
   });
 });

@@ -1,0 +1,115 @@
+@use '../../shared/ui/tokens/breakpoints';
+
+.page {
+  display: grid;
+  gap: var(--space-5);
+  width: 100%;
+}
+
+.page-header {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.eyebrow,
+.title,
+.trace-id {
+  margin: 0;
+}
+
+.eyebrow {
+  margin-bottom: var(--space-1);
+  color: var(--color-accent);
+  font-size: var(--font-size-body-small);
+  font-weight: var(--font-weight-extrabold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.title {
+  font-size: clamp(var(--font-size-title), 4vw, var(--font-size-display));
+  font-weight: var(--font-weight-extrabold);
+  line-height: var(--line-height-tight);
+}
+
+.total {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+}
+
+.list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--space-2);
+}
+
+.state {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.trace-id {
+  color: var(--color-text-tertiary);
+  font-family: var(--font-family-metric);
+  font-size: var(--font-size-caption);
+  text-align: right;
+}
+
+.skeleton-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(13rem, 17rem);
+  overflow: hidden;
+  background: var(--color-surface-default);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-card);
+}
+
+.skeleton-summary,
+.skeleton-commercial {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.skeleton-row {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.skeleton-commercial {
+  align-content: start;
+  background: var(--color-surface-subtle);
+  border-left: 1px solid var(--color-divider);
+}
+
+@media (max-width: breakpoints.$tablet) {
+  .skeleton-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .skeleton-summary,
+  .skeleton-commercial {
+    padding: var(--space-4);
+  }
+
+  .skeleton-commercial {
+    border-top: 1px solid var(--color-divider);
+    border-left: 0;
+  }
+}
+
+@media (max-width: 30rem) {
+  .page-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

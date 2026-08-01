@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 
 import { PageContainer } from '@/shared/ui/page-container/PageContainer';
 

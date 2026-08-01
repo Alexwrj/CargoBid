@@ -1,7 +1,11 @@
 import { type QueryClient } from '@tanstack/react-query';
+import {
+  createMemoryHistory,
+  createRootRoute,
+  createRouter,
+} from '@tanstack/react-router';
 import { render, type RenderOptions } from '@testing-library/react';
 import type { ReactElement } from 'react';
-import { createMemoryRouter } from 'react-router-dom';
 
 import { AppProviders } from '@/app/providers/AppProviders';
 import { createQueryClient } from '@/app/providers/query-client';
@@ -12,11 +16,12 @@ interface RenderAppOptions {
   route?: string;
 }
 
-export function renderApp({
+export async function renderApp({
   queryClient = createQueryClient({ isTest: true }),
   route = '/auctions',
 }: RenderAppOptions = {}) {
   const router = createTestRouter([route]);
+  await router.load();
   const result = render(
     <AppProviders queryClient={queryClient} router={router} />,
   );
@@ -29,7 +34,7 @@ interface RenderWithProvidersOptions extends Omit<RenderOptions, 'wrapper'> {
   route?: string;
 }
 
-export function renderWithProviders(
+export async function renderWithProviders(
   ui: ReactElement,
   {
     queryClient = createQueryClient({ isTest: true }),
@@ -37,9 +42,12 @@ export function renderWithProviders(
     ...renderOptions
   }: RenderWithProvidersOptions = {},
 ) {
-  const router = createMemoryRouter([{ path: '*', element: ui }], {
-    initialEntries: [route],
+  const rootRoute = createRootRoute({ component: () => ui });
+  const router = createRouter({
+    history: createMemoryHistory({ initialEntries: [route] }),
+    routeTree: rootRoute,
   });
+  await router.load();
   const result = render(
     <AppProviders queryClient={queryClient} router={router} />,
     renderOptions,
