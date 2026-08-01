@@ -17,7 +17,7 @@ describe('auction list', () => {
 
     expect(screen.getByText('Вы лидируете')).toBeInTheDocument();
     expect(screen.getByText('28 500 ₽')).toBeInTheDocument();
-    expect(screen.getByText('Найдено: 8')).toBeInTheDocument();
+    expect(screen.getByText('Найдено: 8 аукционов')).toBeInTheDocument();
     expect(
       screen.getAllByText('Открыть аукцион', { exact: false }),
     ).toHaveLength(6);
@@ -25,7 +25,9 @@ describe('auction list', () => {
     await user.click(auctionLink);
 
     expect(
-      await screen.findByRole('heading', { name: 'Детали аукциона' }),
+      await screen.findByRole('heading', {
+        name: 'Аукцион № CB-000001059',
+      }),
     ).toBeInTheDocument();
     expect(router.state.location.pathname).toBe(
       '/auctions/550e8400-e29b-41d4-a716-446655440001',
@@ -48,14 +50,16 @@ describe('auction list', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows an empty state for an empty contract response', async () => {
-    server.use(createAuctionListHandler({ scenario: 'empty' }));
-
-    await renderApp();
+  it('shows an empty state when applied filters have no matches', async () => {
+    await renderApp({ route: '/auctions?cargoNum=missing' });
 
     expect(
       await screen.findByRole('heading', { name: 'Аукционы не найдены' }),
     ).toBeInTheDocument();
+    expect(screen.getByText('Найдено: 0 аукционов')).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Номер заявки' })).toHaveValue(
+      'missing',
+    );
   });
 
   it('recovers from an API error after retry', async () => {
@@ -114,7 +118,7 @@ describe('auction list', () => {
         name: 'Открыть CB-000001059: Пермь → Москва',
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText('Найдено: 1')).toBeInTheDocument();
+    expect(screen.getByText('Найдено: 1 аукцион')).toBeInTheDocument();
     expect(
       screen.queryByRole('link', {
         name: 'Открыть CB-000001048: Казань → Санкт-Петербург',
@@ -141,7 +145,7 @@ describe('auction list', () => {
     expect(loadCity).toHaveValue('пер');
 
     expect(router.state.location.search).toEqual({ page: 2 });
-    expect(screen.getByText('Найдено: 8')).toBeInTheDocument();
+    expect(screen.getByText('Найдено: 8 аукционов')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Применить' }));
 
@@ -151,7 +155,12 @@ describe('auction list', () => {
       }),
     ).toBeInTheDocument();
     expect(router.state.location.search).toEqual({ loadCity: 'пер' });
-    expect(screen.getByText('Найдено: 1')).toBeInTheDocument();
+    expect(screen.getByText('Найдено: 1 аукцион')).toBeInTheDocument();
+
+    const appliedLocation = router.history.location;
+
+    await user.click(screen.getByRole('button', { name: 'Применить' }));
+    expect(router.history.location).toBe(appliedLocation);
   });
 
   it('clears the URL, form and applied result on reset', async () => {
@@ -160,15 +169,35 @@ describe('auction list', () => {
       route: '/auctions?unloadCity=%D0%9E%D0%BC%D1%81%D0%BA',
     });
 
-    expect(await screen.findByText('Найдено: 1')).toBeInTheDocument();
+    expect(await screen.findByText('Найдено: 1 аукцион')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Сбросить' }));
 
-    expect(await screen.findByText('Найдено: 8')).toBeInTheDocument();
+    expect(await screen.findByText('Найдено: 8 аукционов')).toBeInTheDocument();
     expect(router.state.location.search).toEqual({});
     expect(
       screen.getByRole('combobox', { name: 'Город назначения' }),
     ).toHaveValue('');
+  });
+
+  it('ignores invalid optional URL values without breaking the page', async () => {
+    await renderApp({
+      route:
+        '/auctions?auctionStatus=Broken&isAvailable=perhaps&page=-2&weightFrom=-1&weightTo=NaN',
+    });
+
+    expect(
+      await screen.findByRole('link', {
+        name: 'Открыть CB-000001059: Пермь → Москва',
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Найдено: 8 аукционов')).toBeInTheDocument();
+    expect(
+      screen.getByRole('combobox', { name: 'Статус аукциона' }),
+    ).toHaveTextContent('Любой статус');
+    expect(
+      screen.getByRole('combobox', { name: 'Доступность участия' }),
+    ).toHaveTextContent('Любая');
   });
 
   it('restores applied filters and form values with browser history', async () => {
@@ -181,7 +210,7 @@ describe('auction list', () => {
     await user.type(loadCity, 'Пермь');
     await user.click(await screen.findByRole('option', { name: 'Пермь' }));
     await user.click(screen.getByRole('button', { name: 'Применить' }));
-    expect(await screen.findByText('Найдено: 1')).toBeInTheDocument();
+    expect(await screen.findByText('Найдено: 1 аукцион')).toBeInTheDocument();
 
     await user.clear(loadCity);
     await user.type(loadCity, 'Казань');

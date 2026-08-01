@@ -5,56 +5,16 @@ import {
   formatTimeUntil,
   formatUnit,
 } from '@/shared/lib/formatters';
+import {
+  presentAuctionStatus,
+  presentAuctionType,
+  presentUserStatus,
+  type AuctionStatusView,
+} from './auction-display';
 
 type AuctionListItem = components['schemas']['AuctionListItem'];
-type AuctionStatus = NonNullable<
-  NonNullable<AuctionListItem['trading']>['status']
->;
-type UserStatus = NonNullable<
-  NonNullable<AuctionListItem['trading']>['status_mobile']
->;
-type AuctionType = NonNullable<
-  NonNullable<AuctionListItem['main']>['auc_type']
->;
 
-type StatusTone =
-  'neutral' | 'accent' | 'success' | 'danger' | 'warning' | 'info';
-
-interface StatusView {
-  label: string;
-  tone: StatusTone;
-}
-
-const auctionStatusViews = {
-  Auction: { label: 'Торги идут', tone: 'success' },
-  Canceled: { label: 'Отменён', tone: 'neutral' },
-  DeterminateWinner: { label: 'Определение победителя', tone: 'warning' },
-  Finished: { label: 'Завершён', tone: 'neutral' },
-  InProgress: { label: 'В работе', tone: 'info' },
-  Planning: { label: 'Планирование', tone: 'warning' },
-  Stopped: { label: 'Остановлен', tone: 'neutral' },
-  Unknown: { label: 'Статус не определён', tone: 'neutral' },
-  WaitDeal: { label: 'Ожидание сделки', tone: 'info' },
-} satisfies Record<AuctionStatus, StatusView>;
-
-const userStatusViews = {
-  Confirmed: { label: 'Участие подтверждено', tone: 'info' },
-  Leading: { label: 'Вы лидируете', tone: 'success' },
-  Losing: { label: 'Вас перебили', tone: 'danger' },
-  NotParticipating: { label: 'Вы не участвуете', tone: 'neutral' },
-  Unknown: { label: 'Положение не определено', tone: 'neutral' },
-  Winner: { label: 'Вы победили', tone: 'success' },
-} satisfies Record<UserStatus, StatusView>;
-
-const auctionTypeLabels = {
-  Down: 'На понижение',
-  FixPrice: 'Фиксированная цена',
-  Request: 'Заявочный',
-  Unknown: 'Тип не определён',
-  Up: 'На повышение',
-} satisfies Record<AuctionType, string>;
-
-function getUserStatus(item: AuctionListItem): StatusView {
+function getUserStatus(item: AuctionListItem): AuctionStatusView {
   const trading = item.trading;
 
   if (
@@ -64,9 +24,7 @@ function getUserStatus(item: AuctionListItem): StatusView {
     return { label: 'Участие недоступно', tone: 'neutral' };
   }
 
-  return trading?.status_mobile
-    ? userStatusViews[trading.status_mobile]
-    : { label: 'Положение не указано', tone: 'neutral' };
+  return presentUserStatus(trading?.status_mobile);
 }
 
 function getCargoDetails(item: AuctionListItem) {
@@ -92,7 +50,7 @@ function getAdditionalPoints(item: AuctionListItem) {
 
 export interface AuctionListCardView {
   actionLabel: string;
-  auctionStatus: StatusView;
+  auctionStatus: AuctionStatusView;
   auctionType: string;
   auctionUuid?: string;
   cargoDetails: string[];
@@ -106,7 +64,7 @@ export interface AuctionListCardView {
   route: string;
   routePoints?: string;
   unloadDate: string;
-  userStatus: StatusView;
+  userStatus: AuctionStatusView;
   yourBet?: string;
 }
 
@@ -121,16 +79,12 @@ export function presentAuctionListItem(
   const currentPrice = trading?.price?.current;
   const lastBet = trading?.your?.last_bet;
   const currencyCode = payment?.currency_code ?? '643';
-  const auctionStatus = trading?.status
-    ? auctionStatusViews[trading.status]
-    : { label: 'Статус не указан', tone: 'neutral' as const };
+  const auctionStatus = presentAuctionStatus(trading?.status);
 
   return {
     actionLabel: 'Открыть аукцион',
     auctionStatus,
-    auctionType: main?.auc_type
-      ? auctionTypeLabels[main.auc_type]
-      : 'Тип не указан',
+    auctionType: presentAuctionType(main?.auc_type),
     auctionUuid: main?.order_uid,
     cargoDetails: getCargoDetails(item),
     cargoName: item.cargo?.name ?? 'Груз не указан',

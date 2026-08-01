@@ -6,6 +6,7 @@ import { presentAuctionListError } from '@/entities/auction/model/auction-list-e
 import { presentAuctionListItem } from '@/entities/auction/model/auction-list-presenter';
 import { AuctionListCard } from '@/entities/auction/ui/AuctionListCard';
 import {
+  areAuctionFilterSearchEqual,
   auctionsPerPage,
   searchToAuctionListRequest,
 } from '@/features/auction-filters/model/auction-filter-search';
@@ -18,6 +19,21 @@ import { EmptyState, ErrorState } from '@/shared/ui/state-message/StateMessage';
 import styles from './AuctionsPage.module.scss';
 
 const routeApi = getRouteApi('/auctions');
+
+function formatAuctionsFound(total: number) {
+  const lastTwoDigits = total % 100;
+  const lastDigit = total % 10;
+  const noun =
+    lastDigit === 1 && lastTwoDigits !== 11
+      ? 'аукцион'
+      : lastDigit >= 2 &&
+          lastDigit <= 4 &&
+          (lastTwoDigits < 12 || lastTwoDigits > 14)
+        ? 'аукциона'
+        : 'аукционов';
+
+  return `Найдено: ${total} ${noun}`;
+}
 
 function AuctionsListSkeleton() {
   return (
@@ -71,17 +87,21 @@ export function AuctionsPage() {
           <h1 className={styles.title}>Аукционы</h1>
         </div>
         {!auctionListQuery.isPending && !auctionListQuery.isError ? (
-          <span className={styles.total}>Найдено: {total}</span>
+          <span className={styles.total}>{formatAuctionsFound(total)}</span>
         ) : null}
       </header>
 
       <AuctionFiltersForm
         appliedFilters={search}
         onApply={(filters) => {
-          void navigate({ search: filters });
+          if (!areAuctionFilterSearchEqual(search, filters)) {
+            void navigate({ search: filters });
+          }
         }}
         onReset={() => {
-          void navigate({ search: {} });
+          if (!areAuctionFilterSearchEqual(search, {})) {
+            void navigate({ search: {} });
+          }
         }}
       />
 

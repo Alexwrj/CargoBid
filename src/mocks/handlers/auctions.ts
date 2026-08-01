@@ -3,7 +3,7 @@ import { delay, http, HttpResponse } from 'msw';
 import { auctionStatusIds } from '@/entities/auction/model/auction-status';
 import {
   auctionBetsFixture,
-  auctionFixture,
+  auctionDetailStore,
   auctionListStore,
 } from '@/mocks/data/auction-contract-fixtures';
 import type { ListAuctionsRequestBody } from '@/shared/api/generated/auctions/list/listAuctions';
@@ -13,12 +13,19 @@ const auctionApiUrl = '*/api/v1/auctions';
 
 type AuctionListItem = components['schemas']['AuctionListItem'];
 type AuctionListResponse = components['schemas']['AuctionListResponseBase'];
+type AuctionResponse = components['schemas']['AuctionShowResponse'];
 type ProblemDetail = components['schemas']['ProblemDetail'];
 
 interface AuctionListHandlerOptions {
   items?: AuctionListItem[];
   responseDelay?: number | 'infinite';
   scenario?: 'success' | 'empty' | 'error';
+}
+
+interface AuctionDetailHandlerOptions {
+  items?: AuctionResponse[];
+  responseDelay?: number | 'infinite';
+  scenario?: 'success' | 'error';
 }
 
 function normalizeText(value: string) {
@@ -161,11 +168,52 @@ export function createAuctionListHandler({
   });
 }
 
+export function createAuctionDetailHandler({
+  items = auctionDetailStore.items,
+  responseDelay,
+  scenario = 'success',
+}: AuctionDetailHandlerOptions = {}) {
+  return http.get(
+    `${auctionApiUrl}/:auctionUuid`,
+    async ({ params: { auctionUuid } }) => {
+      if (responseDelay !== undefined) {
+        await delay(responseDelay);
+      }
+
+      if (scenario === 'error') {
+        return HttpResponse.json(
+          {
+            code: 'auction_unavailable',
+            title: 'Сервис временно недоступен',
+            message: 'Не удалось загрузить данные аукциона',
+            trace_id: 'trace-auction-detail-503',
+          } satisfies ProblemDetail,
+          { status: 503 },
+        );
+      }
+
+      const auction = items.find((item) => item.main.order_uid === auctionUuid);
+
+      if (!auction) {
+        return HttpResponse.json(
+          {
+            code: 'resource_not_found',
+            title: 'Не найдено',
+            message: 'Аукцион не найден',
+            trace_id: 'trace-auction-detail-404',
+          } satisfies ProblemDetail,
+          { status: 404 },
+        );
+      }
+
+      return HttpResponse.json(auction);
+    },
+  );
+}
+
 export const auctionHandlers = [
   createAuctionListHandler(),
-  http.get(`${auctionApiUrl}/:auctionUuid`, () => {
-    return HttpResponse.json(auctionFixture);
-  }),
+  createAuctionDetailHandler(),
   http.get(`${auctionApiUrl}/:auctionUuid/bets`, () => {
     return HttpResponse.json(auctionBetsFixture);
   }),

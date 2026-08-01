@@ -13,15 +13,6 @@ describe('application routing', () => {
     expect(router.state.location.pathname).toBe('/auctions');
   });
 
-  it('passes auctionUuid to the auction details page', async () => {
-    await renderApp({ route: '/auctions/auction-42' });
-
-    expect(
-      await screen.findByRole('heading', { name: 'Детали аукциона' }),
-    ).toBeInTheDocument();
-    expect(screen.getByText('auction-42')).toBeInTheDocument();
-  });
-
   it('passes auctionUuid to the place bet page', async () => {
     await renderApp({ route: '/auctions/auction-42/bet' });
 

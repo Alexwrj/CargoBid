@@ -4,6 +4,7 @@ type AuctionListItem = components['schemas']['AuctionListItem'];
 type AuctionListResponse = components['schemas']['AuctionListResponseBase'];
 type AuctionResponse = components['schemas']['AuctionShowResponse'];
 type AuctionBetsResponse = components['schemas']['BetListResponse'];
+type RoutePoint = components['schemas']['RoutePoint'];
 
 const fixtureReferenceTime = Date.now();
 
@@ -56,14 +57,14 @@ export const auctionListItems = [
       auc_type: 'Up',
       order_uid: '550e8400-e29b-41d4-a716-446655440002',
       created_at: dateAfter(-240),
-      price_per_km: 40.1,
+      price_per_km: 43,
     },
     organizer: { organization_name: 'Логика Пути' },
     route: {
       load: { city: 'Казань', date: dateAfter(2_880), points_count: 1 },
       unload: {
         city: 'Санкт-Петербург',
-        date: dateAfter(3_360),
+        date: dateAfter(3_960),
         points_count: 2,
       },
     },
@@ -306,6 +307,166 @@ export const auctionListStore = {
   items: auctionListItems,
 };
 
+function createRoutePoint(
+  item: AuctionListItem,
+  operation: 'Loading' | 'Unloading',
+  rowNumber: number,
+): RoutePoint {
+  const route = operation === 'Loading' ? item.route?.load : item.route?.unload;
+
+  return {
+    row_num: rowNumber,
+    op_type: operation,
+    start_date: route?.date,
+    location: {
+      city_name: route?.city,
+      city_full_name: route?.city ? `${route.city}, Россия` : undefined,
+    },
+    cargo: {
+      name: item.cargo?.name,
+      weight:
+        item.cargo?.weight === undefined
+          ? undefined
+          : item.cargo.weight.toFixed(3),
+      volume:
+        item.cargo?.volume === undefined
+          ? undefined
+          : item.cargo.volume.toFixed(3),
+    },
+  };
+}
+
+function createAuctionDetail(
+  item: AuctionListItem,
+  index: number,
+): AuctionResponse {
+  const trading = item.trading;
+
+  return {
+    main: {
+      id: item.main?.id,
+      cargo_num: item.main?.cargo_num,
+      order_uid: item.main?.order_uid,
+      auc_type: item.main?.auc_type,
+      created_at: item.main?.created_at,
+    },
+    organizer: {
+      organization_name: item.organizer?.organization_name,
+      organization_inn:
+        item.organizer?.organization_name === undefined
+          ? undefined
+          : `59000000${index + 10}`,
+    },
+    contacts: [],
+    cargo: {
+      distance: 850 + index * 125,
+      truck_count: item.cargo?.truck_count,
+      body_type: item.cargo?.body_type,
+      temp_from: item.cargo?.temp_from,
+      temp_to: item.cargo?.temp_to,
+      containered: item.cargo?.containered ?? false,
+      car: item.cargo?.car
+        ? {
+            type: item.cargo.car.type,
+            weight: item.cargo.car.weight,
+            volume: item.cargo.car.volume,
+            width: item.cargo.car.width,
+            length: item.cargo.car.length,
+            height: item.cargo.car.height,
+          }
+        : null,
+    },
+    trading: {
+      status: trading?.status,
+      status_mobile: trading?.status_mobile,
+      start_time: trading?.start_time,
+      stop_time: trading?.stop_time,
+      bid_measurement_type: trading?.bid_measurement_type ?? undefined,
+      can_set_bet: trading?.can_set_bet,
+      is_bidder: trading?.is_bidder,
+      price: trading?.price
+        ? {
+            start: trading.price.start,
+            current: trading.price.current,
+            current_no_vat: trading.price.current_no_vat,
+            step: 1_000,
+            price_per_km: item.main?.price_per_km ?? undefined,
+          }
+        : undefined,
+      your: trading?.your
+        ? {
+            bet: trading.your.bet,
+            last_bet: trading.your.last_bet,
+            win: trading.status_mobile === 'Winner',
+          }
+        : undefined,
+      settings: {},
+    },
+    payment: {
+      form: item.payment?.form,
+      currency_code: item.payment?.currency_code,
+    },
+    assembly: {},
+    routes: [
+      createRoutePoint(item, 'Loading', 1),
+      createRoutePoint(item, 'Unloading', 2),
+    ],
+    admitted_organizations: [],
+  };
+}
+
+const multipleRoutePoints = [
+  {
+    row_num: 3,
+    op_type: 'Unloading',
+    start_date: dateAfter(3_960),
+    location: {
+      city_name: 'Санкт-Петербург',
+      city_full_name: 'Санкт-Петербург, Россия',
+      loading_address: 'Складская улица, 18',
+    },
+    cargo: { name: 'Бытовая техника', weight: '8.000', volume: '40.000' },
+  },
+  {
+    row_num: 1,
+    op_type: 'Loading',
+    start_date: dateAfter(2_880),
+    location: {
+      city_name: 'Казань',
+      city_full_name: 'Казань, Россия',
+      loading_address: 'Промышленная улица, 4',
+    },
+    cargo: { name: 'Бытовая техника', weight: '12.000', volume: '60.000' },
+  },
+  {
+    row_num: 2,
+    op_type: 'Unloading',
+    start_date: dateAfter(3_540),
+    location: {
+      city_name: 'Тверь',
+      city_full_name: 'Тверь, Россия',
+      loading_address: 'Московское шоссе, 11',
+    },
+    cargo: { name: 'Бытовая техника', weight: '4.000', volume: '20.000' },
+  },
+] satisfies RoutePoint[];
+
+export const auctionDetailItems = auctionListItems.map((item, index) => {
+  const detail = createAuctionDetail(item, index);
+
+  return index === 1
+    ? {
+        ...detail,
+        cargo: { ...detail.cargo, distance: 1_420 },
+        routes: multipleRoutePoints,
+      }
+    : detail;
+});
+
+export const auctionDetailStore = {
+  items: auctionDetailItems,
+};
+
 export const auctionListFixture = {
   data: auctionListItems,
   meta: {
@@ -317,21 +478,6 @@ export const auctionListFixture = {
     total: auctionListItems.length,
   },
 } satisfies AuctionListResponse;
-
-export const auctionFixture = {
-  main: {
-    cargo_num: 'TEST-001',
-    order_uid: '550e8400-e29b-41d4-a716-446655440000',
-  },
-  organizer: {},
-  contacts: [],
-  cargo: {},
-  trading: {},
-  payment: {},
-  assembly: {},
-  routes: [],
-  admitted_organizations: [],
-} satisfies AuctionResponse;
 
 export const auctionBetsFixture = {
   bets: [],

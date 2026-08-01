@@ -30,7 +30,7 @@ function optionalNonNegativeNumber() {
 
     const number = typeof value === 'number' ? value : Number(value);
 
-    return Number.isFinite(number) ? number : undefined;
+    return Number.isFinite(number) && number >= 0 ? number : undefined;
   }, z.number().nonnegative().optional());
 }
 
@@ -81,6 +81,24 @@ export interface AuctionFilterFormValues {
 }
 
 export const auctionsPerPage = 6;
+
+export function areAuctionFilterSearchEqual(
+  left: AuctionFilterSearch,
+  right: AuctionFilterSearch,
+) {
+  return (
+    left.auctionStatus === right.auctionStatus &&
+    left.bodyType === right.bodyType &&
+    left.cargoNum === right.cargoNum &&
+    left.isAvailable === right.isAvailable &&
+    left.loadCity === right.loadCity &&
+    left.page === right.page &&
+    left.unloadCity === right.unloadCity &&
+    left.userStatus === right.userStatus &&
+    left.weightFrom === right.weightFrom &&
+    left.weightTo === right.weightTo
+  );
+}
 
 export function searchToAuctionListRequest(
   search: AuctionFilterSearch,
