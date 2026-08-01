@@ -1,3 +1,3 @@
-import { healthHandlers } from './health';
+import { auctionHandlers } from './auctions';
 
-export const handlers = [...healthHandlers];
+export const handlers = [...auctionHandlers];

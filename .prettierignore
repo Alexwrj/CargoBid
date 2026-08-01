@@ -4,3 +4,4 @@ coverage/
 AI_USAGE.md
 public/mockServiceWorker.js
 openapi.auctions.v1.json
+src/shared/api/generated/
