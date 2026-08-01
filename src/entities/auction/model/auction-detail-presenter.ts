@@ -35,11 +35,13 @@ export interface AuctionDetailView {
   cargoFacts: AuctionDetailFact[];
   cargoTitle?: string;
   createdAt?: string;
+  currencyCode: string;
   endTime: string;
   organizerFacts: AuctionDetailFact[];
   paymentFacts: AuctionDetailFact[];
   reference: string;
   routePoints: AuctionRoutePointView[];
+  showBidHistory: boolean;
   tradeFacts: AuctionDetailFact[];
   userStatus: AuctionStatusView;
 }
@@ -181,6 +183,7 @@ export function presentAuctionDetail(
     ]),
     cargoTitle: firstRouteCargo?.name || undefined,
     createdAt: formatOptionalDate(main.created_at),
+    currencyCode,
     endTime: formatTimeUntil(trading.stop_time),
     organizerFacts: compactFacts([
       { label: 'Организация', value: response.organizer.organization_name },
@@ -203,6 +206,7 @@ export function presentAuctionDetail(
       main.cargo_num ??
       (main.id === undefined ? 'Без номера' : String(main.id)),
     routePoints: presentRoutePoints(response),
+    showBidHistory: !(response.hide_bets_history || trading.hide_bets_history),
     tradeFacts: compactFacts([
       {
         label: 'Текущая ставка',

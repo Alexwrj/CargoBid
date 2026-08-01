@@ -1,0 +1,134 @@
+@use '../../shared/ui/tokens/breakpoints';
+
+.section {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface-default);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-card);
+
+  h2,
+  p {
+    margin: 0;
+  }
+
+  h2 {
+    font-size: var(--font-size-subtitle);
+    line-height: var(--line-height-tight);
+  }
+}
+
+.skeleton {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.table-wrapper {
+  min-width: 0;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+
+  th,
+  td {
+    padding: var(--space-3);
+    overflow-wrap: anywhere;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--color-divider);
+  }
+
+  th {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-body-small);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+}
+
+.amount {
+  display: grid;
+  gap: var(--space-0-5);
+
+  strong {
+    font-family: var(--font-family-metric);
+    white-space: nowrap;
+  }
+
+  small {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-caption);
+  }
+}
+
+.statuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.trace-id {
+  color: var(--color-text-tertiary);
+  font-family: var(--font-family-metric);
+  font-size: var(--font-size-caption);
+  text-align: right;
+}
+
+@media (max-width: breakpoints.$tablet) {
+  .table {
+    thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    tbody,
+    tr,
+    td {
+      display: block;
+    }
+
+    tr {
+      display: grid;
+      gap: var(--space-2);
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--color-divider);
+    }
+
+    tr:first-child {
+      padding-top: 0;
+    }
+
+    tr:last-child {
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+
+    td {
+      display: grid;
+      grid-template-columns: minmax(6rem, 0.45fr) minmax(0, 1fr);
+      gap: var(--space-2);
+      padding: 0;
+      border: 0;
+
+      &::before {
+        color: var(--color-text-secondary);
+        content: attr(data-label);
+        font-size: var(--font-size-body-small);
+      }
+    }
+  }
+}

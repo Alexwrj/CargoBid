@@ -2,7 +2,7 @@ import { delay, http, HttpResponse } from 'msw';
 
 import { auctionStatusIds } from '@/entities/auction/model/auction-status';
 import {
-  auctionBetsFixture,
+  auctionBidHistoryStore,
   auctionDetailStore,
   auctionListStore,
 } from '@/mocks/data/auction-contract-fixtures';
@@ -14,6 +14,8 @@ const auctionApiUrl = '*/api/v1/auctions';
 type AuctionListItem = components['schemas']['AuctionListItem'];
 type AuctionListResponse = components['schemas']['AuctionListResponseBase'];
 type AuctionResponse = components['schemas']['AuctionShowResponse'];
+type AuctionBet = components['schemas']['BetItem'];
+type AuctionBetsResponse = components['schemas']['BetListResponse'];
 type ProblemDetail = components['schemas']['ProblemDetail'];
 
 interface AuctionListHandlerOptions {
@@ -24,6 +26,12 @@ interface AuctionListHandlerOptions {
 
 interface AuctionDetailHandlerOptions {
   items?: AuctionResponse[];
+  responseDelay?: number | 'infinite';
+  scenario?: 'success' | 'error';
+}
+
+interface AuctionBidHistoryHandlerOptions {
+  histories?: Array<{ auctionUuid: string; bets: AuctionBet[] }>;
   responseDelay?: number | 'infinite';
   scenario?: 'success' | 'error';
 }
@@ -211,12 +219,64 @@ export function createAuctionDetailHandler({
   );
 }
 
+export function createAuctionBidHistoryHandler({
+  histories = auctionBidHistoryStore.items,
+  responseDelay,
+  scenario = 'success',
+}: AuctionBidHistoryHandlerOptions = {}) {
+  return http.get(
+    `${auctionApiUrl}/:auctionUuid/bets`,
+    async ({ params: { auctionUuid }, request }) => {
+      if (responseDelay !== undefined) {
+        await delay(responseDelay);
+      }
+
+      if (scenario === 'error') {
+        return HttpResponse.json(
+          {
+            code: 'auction_bets_unavailable',
+            title: 'Сервис временно недоступен',
+            message: 'Не удалось загрузить историю ставок',
+            trace_id: 'trace-auction-bets-503',
+          } satisfies ProblemDetail,
+          { status: 503 },
+        );
+      }
+
+      const auctionExists = auctionDetailStore.items.some(
+        (item) => item.main.order_uid === auctionUuid,
+      );
+
+      if (!auctionExists) {
+        return HttpResponse.json(
+          {
+            code: 'resource_not_found',
+            title: 'Не найдено',
+            message: 'Аукцион не найден',
+            trace_id: 'trace-auction-bets-404',
+          } satisfies ProblemDetail,
+          { status: 404 },
+        );
+      }
+
+      const history = histories.find(
+        (item) => item.auctionUuid === auctionUuid,
+      );
+      const includeRejected =
+        new URL(request.url).searchParams.get('all') === 'true';
+      const bets = (history?.bets ?? []).filter(
+        (bet) => includeRejected || !bet.is_rejected,
+      );
+
+      return HttpResponse.json({ bets } satisfies AuctionBetsResponse);
+    },
+  );
+}
+
 export const auctionHandlers = [
   createAuctionListHandler(),
   createAuctionDetailHandler(),
-  http.get(`${auctionApiUrl}/:auctionUuid/bets`, () => {
-    return HttpResponse.json(auctionBetsFixture);
-  }),
+  createAuctionBidHistoryHandler(),
   http.post(`${auctionApiUrl}/:auctionUuid/bets`, () => {
     return new HttpResponse(null, { status: 200 });
   }),

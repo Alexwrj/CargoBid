@@ -9,5 +9,5 @@ export const auctionKeys = {
   detail: (auctionUuid: string) =>
     [...auctionKeys.details(), auctionUuid] as const,
   bets: (auctionUuid: string) =>
-    [...auctionKeys.all, 'bets', auctionUuid] as const,
+    [...auctionKeys.detail(auctionUuid), 'bets'] as const,
 };

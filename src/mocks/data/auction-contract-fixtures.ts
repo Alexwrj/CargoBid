@@ -1,15 +1,48 @@
 import type { components } from '@/shared/api/generated/types';
 
 type AuctionListItem = components['schemas']['AuctionListItem'];
-type AuctionListResponse = components['schemas']['AuctionListResponseBase'];
 type AuctionResponse = components['schemas']['AuctionShowResponse'];
-type AuctionBetsResponse = components['schemas']['BetListResponse'];
+type AuctionBet = components['schemas']['BetItem'];
 type RoutePoint = components['schemas']['RoutePoint'];
 
 const fixtureReferenceTime = Date.now();
 
 function dateAfter(minutes: number) {
   return new Date(fixtureReferenceTime + minutes * 60_000).toISOString();
+}
+
+const detailSettingsByAuctionUuid = {
+  '550e8400-e29b-41d4-a716-446655440001': { distance: 1_400, step: 500 },
+  '550e8400-e29b-41d4-a716-446655440002': { distance: 1_420, step: 1_000 },
+  '550e8400-e29b-41d4-a716-446655440003': { distance: 650, step: 1_000 },
+  '550e8400-e29b-41d4-a716-446655440004': { distance: 780, step: 500 },
+  '550e8400-e29b-41d4-a716-446655440005': {
+    distance: 330,
+    step: undefined,
+  },
+  '550e8400-e29b-41d4-a716-446655440006': { distance: 760, step: 1_000 },
+  '550e8400-e29b-41d4-a716-446655440007': { distance: 450, step: 1_000 },
+  '550e8400-e29b-41d4-a716-446655440008': { distance: 280, step: 500 },
+} as const;
+
+const organizerInns = [
+  '5900000108',
+  '5900000115',
+  '5900000122',
+  '5900000130',
+  '5900000147',
+  '5900000154',
+  '5900000161',
+] as const;
+
+function getDetailSettings(auctionUuid: string | undefined) {
+  if (!auctionUuid || !(auctionUuid in detailSettingsByAuctionUuid)) {
+    throw new Error(`Missing detail fixture settings for ${auctionUuid}`);
+  }
+
+  return detailSettingsByAuctionUuid[
+    auctionUuid as keyof typeof detailSettingsByAuctionUuid
+  ];
 }
 
 export const auctionListItems = [
@@ -20,12 +53,12 @@ export const auctionListItems = [
       auc_type: 'Down',
       order_uid: '550e8400-e29b-41d4-a716-446655440001',
       created_at: dateAfter(-180),
-      price_per_km: 35.6,
+      price_per_km: 23_750 / 1_400,
     },
     organizer: { organization_name: 'Северный Вектор' },
     route: {
       load: { city: 'Пермь', date: dateAfter(1_440), points_count: 1 },
-      unload: { city: 'Москва', date: dateAfter(1_800), points_count: 1 },
+      unload: { city: 'Москва', date: dateAfter(2_880), points_count: 1 },
     },
     cargo: {
       name: 'Мороженое',
@@ -57,7 +90,7 @@ export const auctionListItems = [
       auc_type: 'Up',
       order_uid: '550e8400-e29b-41d4-a716-446655440002',
       created_at: dateAfter(-240),
-      price_per_km: 43,
+      price_per_km: 50_833 / 1_420,
     },
     organizer: { organization_name: 'Логика Пути' },
     route: {
@@ -96,12 +129,12 @@ export const auctionListItems = [
       auc_type: 'Request',
       order_uid: '550e8400-e29b-41d4-a716-446655440003',
       created_at: dateAfter(-90),
-      price_per_km: 31.5,
+      price_per_km: 28_333 / 650,
     },
     organizer: { organization_name: 'Меридиан Карго' },
     route: {
       load: { city: 'Новосибирск', date: dateAfter(4_320), points_count: 1 },
-      unload: { city: 'Омск', date: dateAfter(4_680), points_count: 1 },
+      unload: { city: 'Омск', date: dateAfter(5_040), points_count: 1 },
     },
     cargo: {
       name: 'Пиломатериалы',
@@ -131,12 +164,12 @@ export const auctionListItems = [
       auc_type: 'Down',
       order_uid: '550e8400-e29b-41d4-a716-446655440004',
       created_at: dateAfter(-2_880),
-      price_per_km: 29.8,
+      price_per_km: 39_583 / 780,
     },
     organizer: { organization_name: 'Полярная Линия' },
     route: {
       load: { city: 'Архангельск', date: dateAfter(-1_440), points_count: 1 },
-      unload: { city: 'Вологда', date: dateAfter(-960), points_count: 1 },
+      unload: { city: 'Вологда', date: dateAfter(-840), points_count: 1 },
     },
     cargo: {
       name: 'Бумажная продукция',
@@ -148,8 +181,8 @@ export const auctionListItems = [
     trading: {
       status: 'Finished',
       status_mobile: 'Winner',
-      start_time: dateAfter(-600),
-      stop_time: dateAfter(-480),
+      start_time: dateAfter(-1_800),
+      stop_time: dateAfter(-1_680),
       bid_measurement_type: 'PerRoute',
       can_set_bet: false,
       is_bidder: true,
@@ -166,11 +199,11 @@ export const auctionListItems = [
       auc_type: 'FixPrice',
       order_uid: '550e8400-e29b-41d4-a716-446655440005',
       created_at: dateAfter(-60),
-      price_per_km: 37.2,
+      price_per_km: 35_833 / 330,
     },
     organizer: { organization_name: 'Транзит Лаб' },
     route: {
-      load: { city: 'Екатеринбург', date: dateAfter(5_760), points_count: 2 },
+      load: { city: 'Екатеринбург', date: dateAfter(5_760), points_count: 1 },
       unload: { city: 'Тюмень', date: dateAfter(6_120), points_count: 1 },
     },
     cargo: {
@@ -201,12 +234,12 @@ export const auctionListItems = [
       auc_type: 'Down',
       order_uid: '550e8400-e29b-41d4-a716-446655440006',
       created_at: dateAfter(-1_440),
-      price_per_km: 42,
+      price_per_km: 70_000 / 760,
     },
     organizer: { organization_name: 'Восточный Контур' },
     route: {
       load: { city: 'Хабаровск', date: dateAfter(7_200), points_count: 1 },
-      unload: { city: 'Владивосток', date: dateAfter(7_680), points_count: 1 },
+      unload: { city: 'Владивосток', date: dateAfter(7_800), points_count: 1 },
     },
     cargo: {
       name: 'Контейнерный груз',
@@ -237,7 +270,7 @@ export const auctionListItems = [
       auc_type: 'Up',
       order_uid: '550e8400-e29b-41d4-a716-446655440007',
       created_at: dateAfter(-120),
-      price_per_km: 33.3,
+      price_per_km: 34_167 / 450,
     },
     organizer: { organization_name: 'Речной Терминал' },
     route: {
@@ -261,7 +294,7 @@ export const auctionListItems = [
       is_bidder: true,
       is_available: true,
       price: { start: 39_000, current: 41_000, current_no_vat: 34_167 },
-      your: { bet: true, last_bet: 41_000 },
+      your: null,
     },
     payment: { form: 'Безналичная с НДС', currency_code: '643' },
   },
@@ -277,7 +310,7 @@ export const auctionListItems = [
     organizer: {},
     route: {
       load: { city: 'Ростов-на-Дону', date: dateAfter(3_600), points_count: 1 },
-      unload: { city: 'Краснодар', date: dateAfter(3_960), points_count: 3 },
+      unload: { city: 'Краснодар', date: dateAfter(3_960), points_count: 1 },
     },
     cargo: {
       name: 'Сельскохозяйственная продукция с длинным наименованием партии',
@@ -341,6 +374,7 @@ function createAuctionDetail(
   index: number,
 ): AuctionResponse {
   const trading = item.trading;
+  const detailSettings = getDetailSettings(item.main?.order_uid);
 
   return {
     main: {
@@ -355,11 +389,11 @@ function createAuctionDetail(
       organization_inn:
         item.organizer?.organization_name === undefined
           ? undefined
-          : `59000000${index + 10}`,
+          : organizerInns[index],
     },
     contacts: [],
     cargo: {
-      distance: 850 + index * 125,
+      distance: detailSettings.distance,
       truck_count: item.cargo?.truck_count,
       body_type: item.cargo?.body_type,
       temp_from: item.cargo?.temp_from,
@@ -389,7 +423,7 @@ function createAuctionDetail(
             start: trading.price.start,
             current: trading.price.current,
             current_no_vat: trading.price.current_no_vat,
-            step: 1_000,
+            step: detailSettings.step,
             price_per_km: item.main?.price_per_km ?? undefined,
           }
         : undefined,
@@ -454,10 +488,13 @@ const multipleRoutePoints = [
 export const auctionDetailItems = auctionListItems.map((item, index) => {
   const detail = createAuctionDetail(item, index);
 
-  return index === 1
+  if (item.main?.order_uid === '550e8400-e29b-41d4-a716-446655440006') {
+    return { ...detail, hide_bets_history: true };
+  }
+
+  return item.main?.order_uid === '550e8400-e29b-41d4-a716-446655440002'
     ? {
         ...detail,
-        cargo: { ...detail.cargo, distance: 1_420 },
         routes: multipleRoutePoints,
       }
     : detail;
@@ -467,18 +504,187 @@ export const auctionDetailStore = {
   items: auctionDetailItems,
 };
 
-export const auctionListFixture = {
-  data: auctionListItems,
-  meta: {
-    current_page: 1,
-    from: 1,
-    last_page: 1,
-    per_page: auctionListItems.length,
-    to: auctionListItems.length,
-    total: auctionListItems.length,
-  },
-} satisfies AuctionListResponse;
+interface AuctionBidHistoryFixture {
+  auctionUuid: string;
+  bets: AuctionBet[];
+}
 
-export const auctionBetsFixture = {
-  bets: [],
-} satisfies AuctionBetsResponse;
+export const auctionBidHistoryItems = [
+  {
+    auctionUuid: '550e8400-e29b-41d4-a716-446655440001',
+    bets: [
+      {
+        id: 103,
+        auction_id: 1059,
+        subscriber_id: 41,
+        organization_name: 'Северный Экспресс',
+        created_at: dateAfter(-10),
+        price_with_vat: 28_500,
+        price_no_vat: 23_750,
+      },
+      {
+        id: 102,
+        auction_id: 1059,
+        subscriber_id: 41,
+        organization_name: 'Северный Экспресс',
+        created_at: dateAfter(-25),
+        price_with_vat: 30_000,
+        price_no_vat: 25_000,
+      },
+      {
+        id: 101,
+        auction_id: 1059,
+        subscriber_id: 37,
+        organization_name: 'ТрансЛиния',
+        created_at: dateAfter(-40),
+        price_with_vat: 32_000,
+        price_no_vat: 26_666.67,
+      },
+      {
+        id: 100,
+        auction_id: 1059,
+        subscriber_id: 35,
+        organization_name: 'Отменённый участник',
+        created_at: dateAfter(-42),
+        price_with_vat: 33_000,
+        is_rejected: true,
+        cancel_reason: 'Ставка отозвана',
+      },
+    ],
+  },
+  {
+    auctionUuid: '550e8400-e29b-41d4-a716-446655440002',
+    bets: [
+      {
+        id: 203,
+        auction_id: 1048,
+        subscriber_id: 52,
+        organization_name: 'Балтийский Транзит',
+        created_at: dateAfter(-5),
+        price_with_vat: 61_000,
+        price_no_vat: 50_833.33,
+        is_counter: true,
+      },
+      {
+        id: 202,
+        auction_id: 1048,
+        subscriber_id: 48,
+        organization_name: 'Волга Карго',
+        created_at: dateAfter(-15),
+        price_with_vat: 60_000,
+        price_no_vat: 50_000,
+      },
+      {
+        id: 201,
+        auction_id: 1048,
+        subscriber_id: 48,
+        organization_name: 'Волга Карго',
+        created_at: dateAfter(-25),
+        price_with_vat: 58_000,
+        price_no_vat: 48_333.33,
+      },
+    ],
+  },
+  {
+    auctionUuid: '550e8400-e29b-41d4-a716-446655440003',
+    bets: [],
+  },
+  {
+    auctionUuid: '550e8400-e29b-41d4-a716-446655440004',
+    bets: [
+      {
+        id: 403,
+        auction_id: 1027,
+        subscriber_id: 63,
+        organization_name: 'СеверАвто',
+        created_at: dateAfter(-1_690),
+        price_with_vat: 47_500,
+        price_no_vat: 39_583.33,
+        is_win: true,
+        place: 1,
+      },
+      {
+        id: 402,
+        auction_id: 1027,
+        subscriber_id: 68,
+        organization_name: 'РегионТранс',
+        created_at: dateAfter(-1_740),
+        price_with_vat: 50_000,
+        price_no_vat: 41_666.67,
+      },
+      {
+        id: 401,
+        auction_id: 1027,
+        subscriber_id: 63,
+        organization_name: 'СеверАвто',
+        created_at: dateAfter(-1_790),
+        price_with_vat: 52_000,
+        price_no_vat: 43_333.33,
+      },
+    ],
+  },
+  {
+    auctionUuid: '550e8400-e29b-41d4-a716-446655440005',
+    bets: [
+      {
+        id: 501,
+        auction_id: 1019,
+        subscriber_id: 72,
+        organization_name: 'Урал Логистик',
+        created_at: dateAfter(-10),
+        price_with_vat: 43_000,
+        price_no_vat: 35_833.33,
+      },
+    ],
+  },
+  {
+    auctionUuid: '550e8400-e29b-41d4-a716-446655440006',
+    bets: [],
+  },
+  {
+    auctionUuid: '550e8400-e29b-41d4-a716-446655440007',
+    bets: [
+      {
+        id: 702,
+        auction_id: 1008,
+        subscriber_id: 82,
+        organization_name: 'Поволжье Транс',
+        created_at: dateAfter(-2),
+        price_with_vat: 41_000,
+        price_no_vat: 34_166.67,
+      },
+      {
+        id: 701,
+        auction_id: 1008,
+        subscriber_id: 79,
+        organization_name: 'Самара Карго',
+        created_at: dateAfter(-3),
+        price_with_vat: 40_000,
+        price_no_vat: 33_333.33,
+      },
+    ],
+  },
+  {
+    auctionUuid: '550e8400-e29b-41d4-a716-446655440008',
+    bets: [
+      {
+        id: 801,
+        auction_id: 1003,
+        created_at: dateAfter(-5),
+        price_info: {
+          price_with_vat: 71_500,
+          price_no_vat: 59_583.33,
+          payment_type: null,
+          vat_rate: null,
+        },
+        organization_name: '',
+        transporter_comment: null,
+        place: null,
+      },
+    ],
+  },
+] satisfies AuctionBidHistoryFixture[];
+
+export const auctionBidHistoryStore = {
+  items: auctionBidHistoryItems,
+};

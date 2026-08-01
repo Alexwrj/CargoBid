@@ -13,6 +13,7 @@ import { Skeleton } from '@/shared/ui/skeleton/Skeleton';
 import { EmptyState, ErrorState } from '@/shared/ui/state-message/StateMessage';
 
 import styles from './AuctionDetailsPage.module.scss';
+import { AuctionBidHistorySection } from './AuctionBidHistorySection';
 
 const routeApi = getRouteApi('/auctions/$auctionUuid');
 
@@ -210,6 +211,13 @@ export function AuctionDetailsPage() {
                 <p className={styles.createdAt}>Создан: {auction.createdAt}</p>
               ) : null}
             </section>
+          ) : null}
+
+          {auction.showBidHistory ? (
+            <AuctionBidHistorySection
+              auctionUuid={auctionUuid}
+              currencyCode={auction.currencyCode}
+            />
           ) : null}
         </div>
 

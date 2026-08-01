@@ -1,14 +1,20 @@
-import { screen, within } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
-import { createAuctionDetailHandler } from '@/mocks/handlers/auctions';
+import {
+  createAuctionBidHistoryHandler,
+  createAuctionDetailHandler,
+} from '@/mocks/handlers/auctions';
 import { server } from '@/mocks/server';
 
 import { renderApp } from './render';
 
 const leadingAuctionUuid = '550e8400-e29b-41d4-a716-446655440001';
 const losingAuctionUuid = '550e8400-e29b-41d4-a716-446655440002';
+const emptyHistoryAuctionUuid = '550e8400-e29b-41d4-a716-446655440003';
+const hiddenHistoryAuctionUuid = '550e8400-e29b-41d4-a716-446655440006';
+const confirmedAuctionUuid = '550e8400-e29b-41d4-a716-446655440007';
 const nullableAuctionUuid = '550e8400-e29b-41d4-a716-446655440008';
 
 describe('auction details', () => {
@@ -46,7 +52,7 @@ describe('auction details', () => {
     expect(points[2]).toHaveTextContent('8 т');
     expect(points[2]).toHaveTextContent('40 м³');
     expect(screen.getByText('1 420 км')).toBeInTheDocument();
-    expect(screen.getByText('43 ₽')).toBeInTheDocument();
+    expect(screen.getByText('36 ₽')).toBeInTheDocument();
     expect(
       screen.queryByText('Установка ставки будет доступна на следующем этапе.'),
     ).not.toBeInTheDocument();
@@ -155,5 +161,152 @@ describe('auction details', () => {
     expect(
       await screen.findByRole('combobox', { name: 'Город отправления' }),
     ).toHaveValue('Пермь');
+  });
+
+  it('renders only the selected auction history in server order', async () => {
+    await renderApp({ route: `/auctions/${losingAuctionUuid}` });
+
+    const table = await screen.findByRole('table');
+    const rows = within(table).getAllByRole('row');
+
+    expect(rows).toHaveLength(4);
+    expect(rows[1]).toHaveTextContent('Балтийский Транзит');
+    expect(rows[1]).toHaveTextContent('61 000 ₽');
+    expect(rows[1]).toHaveTextContent('Встречная');
+    expect(rows[2]).toHaveTextContent('Волга Карго');
+    expect(rows[2]).toHaveTextContent('60 000 ₽');
+    expect(rows[3]).toHaveTextContent('58 000 ₽');
+    expect(
+      within(table).queryByText('Северный Экспресс'),
+    ).not.toBeInTheDocument();
+    expect(within(table).queryByText('Вы')).not.toBeInTheDocument();
+  });
+
+  it('keeps auction details visible while bid history is loading', async () => {
+    server.use(createAuctionBidHistoryHandler({ responseDelay: 100 }));
+
+    await renderApp({ route: `/auctions/${leadingAuctionUuid}` });
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Аукцион № CB-000001059',
+      }),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByLabelText('Загрузка истории ставок'),
+    ).toHaveAttribute('aria-busy', 'true');
+    expect(await screen.findByText('ТрансЛиния')).toBeInTheDocument();
+  });
+
+  it('shows an empty state for an auction without bids', async () => {
+    await renderApp({ route: `/auctions/${emptyHistoryAuctionUuid}` });
+
+    expect(
+      await screen.findByRole('heading', { name: 'Ставок пока нет' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Участники ещё не сделали ни одной ставки.'),
+    ).toBeInTheDocument();
+  });
+
+  it('localizes a bid history error and retries only its request', async () => {
+    const user = userEvent.setup();
+    server.use(createAuctionBidHistoryHandler({ scenario: 'error' }));
+
+    await renderApp({ route: `/auctions/${leadingAuctionUuid}` });
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Аукцион № CB-000001059',
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Пермь, Россия')).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Не удалось загрузить историю ставок',
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/trace-auction-bets-503/)).toBeInTheDocument();
+
+    server.use(createAuctionBidHistoryHandler());
+    await user.click(screen.getByRole('button', { name: 'Попробовать снова' }));
+
+    expect(await screen.findByText('ТрансЛиния')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', {
+        name: 'Не удалось загрузить историю ставок',
+      }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('renders nullable bid fields without inventing an owner', async () => {
+    await renderApp({ route: `/auctions/${nullableAuctionUuid}` });
+
+    const table = await screen.findByRole('table');
+
+    expect(within(table).getByText('Участник не указан')).toBeInTheDocument();
+    expect(within(table).getByText('71 500 ₽')).toBeInTheDocument();
+    expect(within(table).queryByText('Вы')).not.toBeInTheDocument();
+  });
+
+  it('does not invent an own bid or an empty status column', async () => {
+    await renderApp({ route: `/auctions/${confirmedAuctionUuid}` });
+
+    const table = await screen.findByRole('table');
+
+    expect(screen.getByText('Участие подтверждено')).toBeInTheDocument();
+    expect(screen.queryByText('Ваша ставка')).not.toBeInTheDocument();
+    expect(within(table).getByText('Поволжье Транс')).toBeInTheDocument();
+    expect(within(table).getByText('40 000 ₽')).toBeInTheDocument();
+    expect(
+      within(table).queryByRole('columnheader', { name: 'Статус' }),
+    ).not.toBeInTheDocument();
+    expect(within(table).queryByText('Вы')).not.toBeInTheDocument();
+    expect(screen.getByText('76 ₽')).toBeInTheDocument();
+  });
+
+  it('does not keep the previous auction history after navigation', async () => {
+    const { router } = await renderApp({
+      route: `/auctions/${leadingAuctionUuid}`,
+    });
+
+    expect(await screen.findByText('ТрансЛиния')).toBeInTheDocument();
+    server.use(createAuctionBidHistoryHandler({ responseDelay: 100 }));
+
+    await act(async () => {
+      await router.navigate({
+        params: { auctionUuid: losingAuctionUuid },
+        to: '/auctions/$auctionUuid',
+      });
+    });
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Аукцион № CB-000001048',
+      }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('ТрансЛиния')).not.toBeInTheDocument();
+    expect(
+      await screen.findByLabelText('Загрузка истории ставок'),
+    ).toBeInTheDocument();
+    expect(await screen.findByText('Балтийский Транзит')).toBeInTheDocument();
+  });
+
+  it('does not request or render history hidden by the detail contract', async () => {
+    server.use(createAuctionBidHistoryHandler({ scenario: 'error' }));
+
+    await renderApp({ route: `/auctions/${hiddenHistoryAuctionUuid}` });
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Аукцион № CB-000001014',
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: 'История ставок' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Не удалось загрузить историю ставок'),
+    ).not.toBeInTheDocument();
   });
 });
