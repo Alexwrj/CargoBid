@@ -24,7 +24,8 @@
     "classnames": "^2.5.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-hook-form": "^7.83.0"
+    "react-hook-form": "^7.83.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

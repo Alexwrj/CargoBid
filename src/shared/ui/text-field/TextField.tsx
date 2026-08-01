@@ -32,6 +32,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
   ) {
     const generatedId = useId();
     const id = providedId ?? generatedId;
+    const labelId = `${id}-label`;
     const descriptionId = description ? `${id}-description` : undefined;
     const errorId = error ? `${id}-error` : undefined;
     const describedBy =
@@ -39,7 +40,9 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
 
     return (
       <label className={classNames(styles.field, className)} htmlFor={id}>
-        <span className={styles.label}>{label}</span>
+        <span className={styles.label} id={labelId}>
+          {label}
+        </span>
         <span className={classNames(styles.control, error && styles.invalid)}>
           {startAdornment && (
             <span className={styles.adornment}>{startAdornment}</span>
@@ -47,6 +50,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
           <input
             aria-describedby={describedBy}
             aria-invalid={Boolean(error) || undefined}
+            aria-labelledby={labelId}
             className={styles.input}
             id={id}
             ref={ref}

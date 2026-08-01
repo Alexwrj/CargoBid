@@ -5,6 +5,7 @@ import {
   redirect,
 } from '@tanstack/react-router';
 
+import { auctionFilterSearchSchema } from '@/features/auction-filters/model/auction-filter-search';
 import { LoadingFallback } from '@/shared/ui/loading-fallback/LoadingFallback';
 
 import { AppLayout } from './AppLayout';
@@ -31,6 +32,7 @@ const indexRoute = createRoute({
 const auctionsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/auctions',
+  validateSearch: auctionFilterSearchSchema,
   component: lazyRouteComponent(
     () => import('@/pages/auctions/AuctionsPage'),
     'AuctionsPage',

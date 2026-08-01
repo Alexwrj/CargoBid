@@ -1,10 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { getRouteApi } from '@tanstack/react-router';
 
 import { auctionListQueryOptions } from '@/entities/auction/api/auction-list-query';
 import { presentAuctionListError } from '@/entities/auction/model/auction-list-error';
 import { presentAuctionListItem } from '@/entities/auction/model/auction-list-presenter';
 import { AuctionListCard } from '@/entities/auction/ui/AuctionListCard';
+import {
+  auctionsPerPage,
+  searchToAuctionListRequest,
+} from '@/features/auction-filters/model/auction-filter-search';
+import { AuctionFiltersForm } from '@/features/auction-filters/ui/AuctionFiltersForm';
 import { Button } from '@/shared/ui/button/Button';
 import { Pagination } from '@/shared/ui/pagination/Pagination';
 import { Skeleton } from '@/shared/ui/skeleton/Skeleton';
@@ -12,7 +17,7 @@ import { EmptyState, ErrorState } from '@/shared/ui/state-message/StateMessage';
 
 import styles from './AuctionsPage.module.scss';
 
-const auctionsPerPage = 6;
+const routeApi = getRouteApi('/auctions');
 
 function AuctionsListSkeleton() {
   return (
@@ -47,10 +52,11 @@ function AuctionsListSkeleton() {
 }
 
 export function AuctionsPage() {
-  const [page, setPage] = useState(1);
-  const auctionListQuery = useQuery(
-    auctionListQueryOptions({ page, per_page: auctionsPerPage }),
-  );
+  const search = routeApi.useSearch();
+  const navigate = routeApi.useNavigate();
+  const page = search.page ?? 1;
+  const request = searchToAuctionListRequest(search);
+  const auctionListQuery = useQuery(auctionListQueryOptions(request));
 
   const total = auctionListQuery.data?.meta?.total ?? 0;
   const totalPages = auctionListQuery.data?.meta?.last_page ?? 1;
@@ -68,6 +74,16 @@ export function AuctionsPage() {
           <span className={styles.total}>Найдено: {total}</span>
         ) : null}
       </header>
+
+      <AuctionFiltersForm
+        appliedFilters={search}
+        onApply={(filters) => {
+          void navigate({ search: filters });
+        }}
+        onReset={() => {
+          void navigate({ search: {} });
+        }}
+      />
 
       {auctionListQuery.isPending ? <AuctionsListSkeleton /> : null}
 
@@ -122,7 +138,14 @@ export function AuctionsPage() {
             <div className={styles.pagination}>
               <Pagination
                 currentPage={page}
-                onPageChange={setPage}
+                onPageChange={(nextPage) => {
+                  void navigate({
+                    search: (currentSearch) => ({
+                      ...currentSearch,
+                      page: nextPage === 1 ? undefined : nextPage,
+                    }),
+                  });
+                }}
                 siblingCount={2}
                 totalPages={totalPages}
               />

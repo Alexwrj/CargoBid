@@ -18,6 +18,8 @@ export interface ComboboxFieldProps {
   error?: string;
   label: string;
   name?: string;
+  inputValue?: string;
+  onInputValueChange?: (value: string) => void;
   onValueChange?: (value: ComboboxOption | null) => void;
   options: readonly ComboboxOption[];
   placeholder?: string;
@@ -33,6 +35,8 @@ export function ComboboxField({
   error,
   label,
   name,
+  inputValue,
+  onInputValueChange,
   onValueChange,
   options,
   placeholder = 'Начните вводить',
@@ -52,7 +56,14 @@ export function ComboboxField({
       itemToStringLabel={(option) => option.label}
       itemToStringValue={(option) => option.value}
       items={options}
+      modal={false}
       name={name}
+      inputValue={inputValue}
+      onInputValueChange={(nextInputValue, eventDetails) => {
+        if (eventDetails.reason === 'input-change') {
+          onInputValueChange?.(nextInputValue);
+        }
+      }}
       onValueChange={(nextValue) => onValueChange?.(nextValue)}
       required={required}
       value={value}

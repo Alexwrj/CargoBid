@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
@@ -95,5 +95,128 @@ describe('auction list', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('Организатор не указан')).toBeInTheDocument();
     expect(screen.getByText('Участие подтверждено')).toBeInTheDocument();
+  });
+
+  it('hydrates applied filters from a direct URL into the form and request', async () => {
+    await renderApp({
+      route:
+        '/auctions?auctionStatus=Auction&bodyType=%D1%80%D0%B5%D1%84%D1%80%D0%B8%D0%B6%D0%B5%D1%80%D0%B0%D1%82%D0%BE%D1%80&cargoNum=1059&isAvailable=true&loadCity=%D0%BF%D0%B5%D1%80&unloadCity=%D0%BC%D0%BE%D1%81%D0%BA&userStatus=Leading&weightFrom=18&weightTo=18',
+    });
+
+    expect(
+      screen.getByRole('combobox', { name: 'Город отправления' }),
+    ).toHaveValue('пер');
+    expect(
+      screen.getByRole('combobox', { name: 'Моё положение' }),
+    ).toHaveTextContent('Лидирую');
+    expect(
+      await screen.findByRole('link', {
+        name: 'Открыть CB-000001059: Пермь → Москва',
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Найдено: 1')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', {
+        name: 'Открыть CB-000001048: Казань → Санкт-Петербург',
+      }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('keeps draft values local until apply and resets pagination on submit', async () => {
+    const user = userEvent.setup();
+    const { router } = await renderApp({ route: '/auctions?page=2' });
+    const loadCity = screen.getByRole('combobox', {
+      name: 'Город отправления',
+    });
+
+    await user.type(loadCity, 'пер');
+
+    expect(
+      await screen.findByRole('option', { name: 'Пермь' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('option', { name: 'Москва' }),
+    ).not.toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(loadCity).toHaveValue('пер');
+
+    expect(router.state.location.search).toEqual({ page: 2 });
+    expect(screen.getByText('Найдено: 8')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Применить' }));
+
+    expect(
+      await screen.findByRole('link', {
+        name: 'Открыть CB-000001059: Пермь → Москва',
+      }),
+    ).toBeInTheDocument();
+    expect(router.state.location.search).toEqual({ loadCity: 'пер' });
+    expect(screen.getByText('Найдено: 1')).toBeInTheDocument();
+  });
+
+  it('clears the URL, form and applied result on reset', async () => {
+    const user = userEvent.setup();
+    const { router } = await renderApp({
+      route: '/auctions?unloadCity=%D0%9E%D0%BC%D1%81%D0%BA',
+    });
+
+    expect(await screen.findByText('Найдено: 1')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Сбросить' }));
+
+    expect(await screen.findByText('Найдено: 8')).toBeInTheDocument();
+    expect(router.state.location.search).toEqual({});
+    expect(
+      screen.getByRole('combobox', { name: 'Город назначения' }),
+    ).toHaveValue('');
+  });
+
+  it('restores applied filters and form values with browser history', async () => {
+    const user = userEvent.setup();
+    const { router } = await renderApp();
+    const loadCity = screen.getByRole('combobox', {
+      name: 'Город отправления',
+    });
+
+    await user.type(loadCity, 'Пермь');
+    await user.click(await screen.findByRole('option', { name: 'Пермь' }));
+    await user.click(screen.getByRole('button', { name: 'Применить' }));
+    expect(await screen.findByText('Найдено: 1')).toBeInTheDocument();
+
+    await user.clear(loadCity);
+    await user.type(loadCity, 'Казань');
+    await user.click(await screen.findByRole('option', { name: 'Казань' }));
+    await user.click(screen.getByRole('button', { name: 'Применить' }));
+    expect(
+      await screen.findByRole('link', {
+        name: 'Открыть CB-000001048: Казань → Санкт-Петербург',
+      }),
+    ).toBeInTheDocument();
+
+    act(() => {
+      router.history.back();
+    });
+
+    expect(
+      await screen.findByRole('combobox', { name: 'Город отправления' }),
+    ).toHaveValue('Пермь');
+    expect(
+      await screen.findByRole('link', {
+        name: 'Открыть CB-000001059: Пермь → Москва',
+      }),
+    ).toBeInTheDocument();
+
+    act(() => {
+      router.history.forward();
+    });
+
+    expect(
+      await screen.findByRole('combobox', { name: 'Город отправления' }),
+    ).toHaveValue('Казань');
+    expect(
+      await screen.findByRole('link', {
+        name: 'Открыть CB-000001048: Казань → Санкт-Петербург',
+      }),
+    ).toBeInTheDocument();
   });
 });
