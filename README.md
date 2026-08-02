@@ -1,5 +1,8 @@
 # CargoBid
 
+> This repository is provided exclusively for candidate evaluation.
+> Commercial or production use is prohibited. See [LICENSE](./LICENSE).
+
 Frontend-приложение для работы с грузовыми аукционами. Реализованы технический
 фундамент, типобезопасная контрактная граница Auction API, список с URL-фильтрами,
 контрактная страница деталей аукциона, история ставок и установка ставки.
