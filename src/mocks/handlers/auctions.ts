@@ -40,7 +40,7 @@ interface AuctionBidHistoryHandlerOptions {
 
 interface AuctionSetBetHandlerOptions {
   responseDelay?: number | 'infinite';
-  scenario?: 'error' | 'stale' | 'success';
+  scenario?: 'error' | 'success' | 'validation-error';
 }
 
 function normalizeText(value: string) {
@@ -458,19 +458,8 @@ export function createAuctionSetBetHandler({
         return validationResponse('Установка ставки недоступна.');
       }
 
-      if (scenario === 'stale') {
-        const current = state.detail.trading.price?.current ?? 0;
-        const step = state.detail.trading.price?.step ?? 1;
-        const competingAmount =
-          state.detail.main.auc_type === 'Down'
-            ? current - step
-            : current + step;
-
-        applyBidToMockState({ amount: competingAmount, isOwn: false, state });
-
-        return validationResponse(
-          'Сумма ставки больше не соответствует актуальным условиям.',
-        );
+      if (scenario === 'validation-error') {
+        return validationResponse('Ставка отклонена правилами аукциона.');
       }
 
       const { price } = await readSetBetRequest(request);

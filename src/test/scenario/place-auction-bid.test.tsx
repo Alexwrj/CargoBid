@@ -30,13 +30,15 @@ describe('place auction bid', () => {
     expect(
       await screen.findByRole('button', { name: 'Отправляем ставку…' }),
     ).toBeDisabled();
+    expect(screen.queryByText('Ставка принята')).not.toBeInTheDocument();
+    await user.keyboard('{Enter}');
     expect(await screen.findByRole('status')).toHaveTextContent(
       'Ставка принята',
     );
     expect(amountInput).toHaveValue('');
     expect(screen.getByText('Вы лидируете')).toBeInTheDocument();
     expect(screen.getAllByText('62 000 ₽')).toHaveLength(3);
-    expect(screen.getAllByText('Демо-перевозчик')).toHaveLength(1);
+    expect(screen.getAllByText('Демо-перевозчик')).toHaveLength(2);
 
     await user.click(
       screen.getByRole('button', { name: /Вернуться к аукционам$/ }),
@@ -87,7 +89,7 @@ describe('place auction bid', () => {
       screen.getByText('Сумма должна быть не больше 100 000 ₽'),
     ).toBeInTheDocument();
     expect(screen.queryByText('Ставка принята')).not.toBeInTheDocument();
-    expect(screen.queryByText('Демо-перевозчик')).not.toBeInTheDocument();
+    expect(screen.queryByText('62 000 ₽')).not.toBeInTheDocument();
   });
 
   it('keeps the amount and page data after a system error and supports retry', async () => {
@@ -119,9 +121,9 @@ describe('place auction bid', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('refreshes stale server state without showing a false success', async () => {
+  it('keeps the draft and shows no false success after a contract validation error', async () => {
     const user = userEvent.setup();
-    server.use(createAuctionSetBetHandler({ scenario: 'stale' }));
+    server.use(createAuctionSetBetHandler({ scenario: 'validation-error' }));
 
     await renderApp({ route: `/auctions/${activeAuctionUuid}` });
 
@@ -132,19 +134,16 @@ describe('place auction bid', () => {
     await user.click(screen.getByRole('button', { name: 'Сделать ставку' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Условия торгов изменились или сумма отклонена.',
+      'Ставка отклонена.',
     );
     expect(screen.queryByText('Ставка принята')).not.toBeInTheDocument();
     expect(amountInput).toHaveValue('62000');
-    expect(
-      await screen.findByText('Конкурирующий перевозчик'),
-    ).toBeInTheDocument();
-    expect(screen.getAllByText('62 000 ₽')).toHaveLength(2);
-    expect(screen.getByText(/От 63 000 ₽/)).toBeInTheDocument();
+    expect(screen.getByText('Балтийский Транзит')).toBeInTheDocument();
+    expect(screen.getByText(/От 62 000 ₽/)).toBeInTheDocument();
 
     server.use(createAuctionSetBetHandler());
     await user.clear(amountInput);
-    await user.type(amountInput, '63000');
+    await user.type(amountInput, '62000');
     await user.click(screen.getByRole('button', { name: 'Сделать ставку' }));
 
     expect(await screen.findByRole('status')).toHaveTextContent(

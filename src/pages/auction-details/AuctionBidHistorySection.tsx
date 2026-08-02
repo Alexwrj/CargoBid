@@ -110,7 +110,14 @@ export function AuctionBidHistorySection({
                 data-own-bid={bet.isOwn || undefined}
                 key={bet.id}
               >
-                <td data-label="Участник">{bet.participant}</td>
+                <td data-label="Участник">
+                  <span className={styles.participant}>
+                    {bet.participant}
+                    {bet.isOwn ? (
+                      <span className={styles.ownMarker}>· Вы</span>
+                    ) : null}
+                  </span>
+                </td>
                 <td data-label="Ставка">
                   {bet.amount ? (
                     <span className={styles.amount}>

@@ -45,11 +45,9 @@ function getAmount(
 
 function getStatuses(
   bet: ListBetsResponse['bets'][number],
-  isOwn: boolean,
 ): AuctionBidHistoryStatus[] {
   const statuses: AuctionBidHistoryStatus[] = [];
 
-  if (isOwn) statuses.push({ label: 'Ваша', tone: 'success' });
   if (bet.is_win) statuses.push({ label: 'Победившая', tone: 'success' });
   if (bet.is_counter) statuses.push({ label: 'Встречная', tone: 'info' });
   if (bet.is_rejected) statuses.push({ label: 'Отклонена', tone: 'danger' });
@@ -83,7 +81,7 @@ export function presentAuctionBidHistory(
         bet.organization_name?.trim() ||
         bet.contact_name?.trim() ||
         'Участник не указан',
-      statuses: getStatuses(bet, isOwn),
+      statuses: getStatuses(bet),
     };
   });
 }

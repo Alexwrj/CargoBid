@@ -117,6 +117,7 @@ export function AuctionFiltersForm({
         </div>
         <div className={styles.actions}>
           <Button
+            className={styles.resetButton}
             onClick={() => {
               reset(searchToFilterFormValues({}));
               onReset();
@@ -138,6 +139,7 @@ export function AuctionFiltersForm({
               description="Начните вводить или выберите город"
               inputValue={field.value}
               label="Город отправления"
+              name={field.name}
               onInputValueChange={field.onChange}
               onValueChange={(option) => {
                 if (option) field.onChange(option.value);
@@ -155,6 +157,7 @@ export function AuctionFiltersForm({
               description="Начните вводить или выберите город"
               inputValue={field.value}
               label="Город назначения"
+              name={field.name}
               onInputValueChange={field.onChange}
               onValueChange={(option) => {
                 if (option) field.onChange(option.value);
@@ -176,6 +179,7 @@ export function AuctionFiltersForm({
           render={({ field }) => (
             <SelectField
               label="Статус аукциона"
+              name={field.name}
               onValueChange={(value) => field.onChange(value ?? '')}
               options={auctionStatusOptions}
               placeholder="Любой статус"
@@ -189,6 +193,7 @@ export function AuctionFiltersForm({
           render={({ field }) => (
             <SelectField
               label="Тип аукциона"
+              name={field.name}
               onValueChange={(value) => field.onChange(value ?? '')}
               options={auctionTypeOptions}
               placeholder="Любой тип"
@@ -202,6 +207,7 @@ export function AuctionFiltersForm({
           render={({ field }) => (
             <SelectField
               label="Моё положение"
+              name={field.name}
               onValueChange={(value) => field.onChange(value ?? '')}
               options={userStatusOptions}
               placeholder="Любое положение"
@@ -215,6 +221,7 @@ export function AuctionFiltersForm({
           render={({ field }) => (
             <SelectField
               label="Тип кузова"
+              name={field.name}
               onValueChange={(value) => field.onChange(value ?? '')}
               options={bodyTypeOptions}
               placeholder="Любой тип"
@@ -231,6 +238,7 @@ export function AuctionFiltersForm({
               error={errors.weightFrom?.message}
               label="Вес от, т"
               min={0}
+              name={field.name}
               onValueChange={(value) => field.onChange(value)}
               value={field.value}
             />
@@ -244,6 +252,7 @@ export function AuctionFiltersForm({
               error={errors.weightTo?.message}
               label="Вес до, т"
               min={0}
+              name={field.name}
               onValueChange={(value) => field.onChange(value)}
               value={field.value}
             />
@@ -255,6 +264,7 @@ export function AuctionFiltersForm({
           render={({ field }) => (
             <SelectField
               label="Доступность участия"
+              name={field.name}
               onValueChange={(value) => field.onChange(value ?? '')}
               options={availabilityOptions}
               placeholder="Любая"

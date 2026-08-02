@@ -79,6 +79,17 @@
   gap: var(--space-1);
 }
 
+.participant {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.own-marker {
+  color: var(--color-success-text);
+  font-weight: var(--font-weight-semibold);
+}
+
 .trace-id {
   color: var(--color-text-tertiary);
   font-family: var(--font-family-metric);
@@ -122,8 +133,12 @@
     }
 
     .own-bid {
-      padding-inline: var(--space-3);
+      padding: var(--space-3);
       border-radius: var(--radius-control);
+
+      &:last-child {
+        padding-bottom: var(--space-3);
+      }
     }
 
     td {

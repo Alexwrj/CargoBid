@@ -13,7 +13,7 @@ export function presentPlaceAuctionBidError(
     if (error.status === 422) {
       return {
         description:
-          'Условия торгов изменились или сумма отклонена. Проверьте актуальные данные и повторите ставку.',
+          'Ставка отклонена. Проверьте актуальные данные и условия аукциона.',
         traceId: getProblemTraceId(error.body),
       };
     }

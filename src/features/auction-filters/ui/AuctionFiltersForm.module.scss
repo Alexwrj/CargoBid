@@ -42,7 +42,8 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-3);
+  column-gap: var(--space-3);
+  row-gap: var(--space-4);
   align-items: start;
 }
 
@@ -59,7 +60,15 @@
 
   .actions {
     width: 100%;
-    justify-content: flex-end;
+
+    button {
+      flex: 1;
+    }
+  }
+
+  .reset-button {
+    border-color: var(--color-border-default);
+    background: var(--color-surface-default);
   }
 
   .grid {

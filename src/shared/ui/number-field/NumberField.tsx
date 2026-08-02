@@ -22,6 +22,7 @@ export function NumberField({
   error,
   id: providedId,
   label,
+  name,
   placeholder,
   ...props
 }: NumberFieldProps) {
@@ -48,6 +49,7 @@ export function NumberField({
           aria-describedby={describedBy}
           aria-invalid={Boolean(error) || undefined}
           className={styles.input}
+          name={name}
           placeholder={placeholder}
         />
         <BaseNumberField.Decrement

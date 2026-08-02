@@ -600,7 +600,7 @@ export const auctionBidHistoryItems = [
         id: 202,
         auction_id: 1048,
         subscriber_id: 999,
-        organization_name: 'Демо-перевозчик · Вы',
+        organization_name: 'Демо-перевозчик',
         created_at: dateAfter(-15),
         price_with_vat: 60_000,
         price_no_vat: 50_000,

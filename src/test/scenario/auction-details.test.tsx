@@ -176,9 +176,9 @@ describe('auction details', () => {
     expect(rows[1]).toHaveTextContent('Балтийский Транзит');
     expect(rows[1]).toHaveTextContent('61 000 ₽');
     expect(rows[1]).toHaveTextContent('Встречная');
-    expect(rows[2]).toHaveTextContent('Демо-перевозчик · Вы');
+    expect(rows[2]).toHaveTextContent('Демо-перевозчик');
+    expect(rows[2]).toHaveTextContent('· Вы');
     expect(rows[2]).toHaveTextContent('60 000 ₽');
-    expect(rows[2]).toHaveTextContent('Ваша');
     expect(rows[2]).toHaveAttribute('data-own-bid', 'true');
     expect(rows[1]).not.toHaveAttribute('data-own-bid');
     expect(within(table).queryByText('58 000 ₽')).not.toBeInTheDocument();
