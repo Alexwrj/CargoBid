@@ -4,18 +4,7 @@ import {
   RequestAbortedError,
   ResponseParseError,
 } from '@/shared/api/api-error';
-
-interface ErrorBodyWithTraceId {
-  trace_id?: unknown;
-}
-
-function getTraceId(body: unknown) {
-  if (!body || typeof body !== 'object') return undefined;
-
-  const traceId = (body as ErrorBodyWithTraceId).trace_id;
-
-  return typeof traceId === 'string' ? traceId : undefined;
-}
+import { getProblemTraceId } from '@/shared/api/problem-detail';
 
 export interface AuctionListErrorView {
   description: string;
@@ -36,7 +25,7 @@ export function presentAuctionListError(error: unknown): AuctionListErrorView {
         error.status >= 500
           ? 'Сервис аукционов временно недоступен. Повторите попытку позже.'
           : 'Сервис не смог обработать запрос списка аукционов.',
-      traceId: getTraceId(error.body),
+      traceId: getProblemTraceId(error.body),
     };
   }
 

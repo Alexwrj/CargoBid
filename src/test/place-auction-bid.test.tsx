@@ -41,6 +41,11 @@ describe('place auction bid', () => {
       screen.getByRole('button', { name: /Вернуться к аукционам$/ }),
     );
 
+    await screen.findByRole(
+      'heading',
+      { name: 'Аукционы' },
+      { timeout: 3_000 },
+    );
     const updatedCard = await screen.findByRole('link', {
       name: /CB-000001048/,
     });

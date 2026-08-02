@@ -4,18 +4,7 @@ import {
   RequestAbortedError,
   ResponseParseError,
 } from '@/shared/api/api-error';
-
-interface ErrorBodyWithTraceId {
-  trace_id?: unknown;
-}
-
-function getTraceId(body: unknown) {
-  if (!body || typeof body !== 'object') return undefined;
-
-  const traceId = (body as ErrorBodyWithTraceId).trace_id;
-
-  return typeof traceId === 'string' ? traceId : undefined;
-}
+import { getProblemTraceId } from '@/shared/api/problem-detail';
 
 export interface AuctionDetailErrorView {
   description: string;
@@ -30,7 +19,7 @@ export function presentAuctionDetailError(
     return {
       description: 'Возможно, аукцион был удалён или ссылка устарела.',
       isNotFound: true,
-      traceId: getTraceId(error.body),
+      traceId: getProblemTraceId(error.body),
     };
   }
 
@@ -49,7 +38,7 @@ export function presentAuctionDetailError(
           ? 'Сервис аукционов временно недоступен. Повторите попытку позже.'
           : 'Сервис не смог обработать запрос данных аукциона.',
       isNotFound: false,
-      traceId: getTraceId(error.body),
+      traceId: getProblemTraceId(error.body),
     };
   }
 

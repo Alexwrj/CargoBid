@@ -19,6 +19,13 @@ export interface AuctionDetailFact {
   value: string;
 }
 
+export interface AuctionBidPlacementView {
+  isAvailable: boolean;
+  max?: number;
+  min?: number;
+  step?: number;
+}
+
 export interface AuctionRoutePointView {
   address?: string;
   cargoFacts: AuctionDetailFact[];
@@ -32,6 +39,7 @@ export interface AuctionRoutePointView {
 export interface AuctionDetailView {
   auctionStatus: AuctionStatusView;
   auctionType: string;
+  bidPlacement: AuctionBidPlacementView;
   cargoFacts: AuctionDetailFact[];
   cargoTitle?: string;
   createdAt?: string;
@@ -151,6 +159,12 @@ export function presentAuctionDetail(
   return {
     auctionStatus: presentAuctionStatus(trading.status),
     auctionType: presentAuctionType(main.auc_type),
+    bidPlacement: {
+      isAvailable: trading.can_set_bet === true && trading.status === 'Auction',
+      max: trading.price?.max ?? undefined,
+      min: trading.price?.min ?? undefined,
+      step: trading.price?.step ?? undefined,
+    },
     cargoFacts: compactFacts([
       { label: 'Тип кузова', value: cargo.body_type },
       {

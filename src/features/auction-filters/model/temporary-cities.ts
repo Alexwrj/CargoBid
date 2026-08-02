@@ -1,7 +1,5 @@
-import type { ComboboxOption } from '@/shared/ui/combobox-field/ComboboxField';
-
 // Временный справочник до появления контрактного источника городов.
-export const temporaryCityOptions = [
+export const temporaryCities = [
   'Архангельск',
   'Владивосток',
   'Вологда',
@@ -18,4 +16,4 @@ export const temporaryCityOptions = [
   'Саратов',
   'Тюмень',
   'Хабаровск',
-].map((city): ComboboxOption => ({ label: city, value: city }));
+] as const;

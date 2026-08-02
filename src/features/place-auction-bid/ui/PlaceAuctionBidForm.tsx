@@ -1,20 +1,15 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import classNames from 'classnames';
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { auctionKeys } from '@/entities/auction/api/auction-keys';
+import { usePlaceAuctionBid } from '@/features/place-auction-bid/api/use-place-auction-bid';
 import { presentPlaceAuctionBidError } from '@/features/place-auction-bid/model/place-auction-bid-error';
 import {
   createPlaceAuctionBidSchema,
   type PlaceAuctionBidFormInput,
   type PlaceAuctionBidFormOutput,
 } from '@/features/place-auction-bid/model/place-auction-bid-schema';
-import {
-  setBet,
-  type SetBetRequestBody,
-} from '@/shared/api/generated/auctions/bets/setBet';
 import { formatMoney } from '@/shared/lib/formatters';
 import { Button } from '@/shared/ui/button/Button';
 import { TextField } from '@/shared/ui/text-field/TextField';
@@ -58,7 +53,6 @@ export function PlaceAuctionBidForm({
   min,
   step,
 }: PlaceAuctionBidFormProps) {
-  const queryClient = useQueryClient();
   const [isSubmissionLocked, setIsSubmissionLocked] = useState(false);
   const schema = useMemo(
     () => createPlaceAuctionBidSchema({ currencyCode, max, min }),
@@ -74,29 +68,7 @@ export function PlaceAuctionBidForm({
     resolver: zodResolver(schema),
   });
 
-  const refreshAuction = async () => {
-    await Promise.all([
-      queryClient.invalidateQueries({
-        exact: true,
-        queryKey: auctionKeys.detail(auctionUuid),
-      }),
-      queryClient.invalidateQueries({
-        exact: true,
-        queryKey: auctionKeys.bets(auctionUuid),
-      }),
-      queryClient.invalidateQueries({ queryKey: auctionKeys.lists() }),
-    ]);
-  };
-
-  const mutation = useMutation({
-    mutationFn: (body: SetBetRequestBody) => setBet({ auctionUuid, body }),
-    onError: async (error) => {
-      if (presentPlaceAuctionBidError(error).shouldRefresh) {
-        await refreshAuction();
-      }
-    },
-    onSuccess: refreshAuction,
-  });
+  const mutation = usePlaceAuctionBid(auctionUuid);
   const errorView = mutation.isError
     ? presentPlaceAuctionBidError(mutation.error)
     : undefined;

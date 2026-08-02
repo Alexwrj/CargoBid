@@ -1,13 +1,15 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
 import {
+  auctionFilterFormSchema,
   filterFormValuesToSearch,
   searchToFilterFormValues,
   type AuctionFilterFormValues,
   type AuctionFilterSearch,
 } from '@/features/auction-filters/model/auction-filter-search';
-import { temporaryCityOptions } from '@/features/auction-filters/model/temporary-city-options';
+import { temporaryCities } from '@/features/auction-filters/model/temporary-cities';
 import { Button } from '@/shared/ui/button/Button';
 import {
   ComboboxField,
@@ -52,6 +54,11 @@ const availabilityOptions = [
   { label: 'Только недоступные', value: 'false' },
 ] as const;
 
+const temporaryCityOptions: ComboboxOption[] = temporaryCities.map((city) => ({
+  label: city,
+  value: city,
+}));
+
 function findCityOption(value: string): ComboboxOption | null {
   const normalizedValue = value.trim().toLocaleLowerCase('ru-RU');
 
@@ -76,12 +83,12 @@ export function AuctionFiltersForm({
   const {
     control,
     formState: { errors },
-    getValues,
     handleSubmit,
     register,
     reset,
   } = useForm<AuctionFilterFormValues>({
     defaultValues: searchToFilterFormValues(appliedFilters),
+    resolver: zodResolver(auctionFilterFormSchema),
   });
 
   useEffect(() => {
@@ -212,18 +219,6 @@ export function AuctionFiltersForm({
         <Controller
           control={control}
           name="weightTo"
-          rules={{
-            validate: (value) => {
-              const weightFrom = getValues('weightFrom');
-
-              return (
-                value === null ||
-                weightFrom === null ||
-                value >= weightFrom ||
-                'Максимальный вес должен быть не меньше минимального'
-              );
-            },
-          }}
           render={({ field }) => (
             <NumberField
               error={errors.weightTo?.message}

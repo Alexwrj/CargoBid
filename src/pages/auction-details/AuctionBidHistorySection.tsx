@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { auctionBidHistoryQueryOptions } from '@/entities/auction/api/auction-bid-history-query';
+import { presentAuctionBidHistoryError } from '@/entities/auction/model/auction-bid-history-error';
 import { presentAuctionBidHistory } from '@/entities/auction/model/auction-bid-history-presenter';
-import { HttpError } from '@/shared/api/api-error';
 import { Badge } from '@/shared/ui/badge/Badge';
 import { Button } from '@/shared/ui/button/Button';
 import { Skeleton } from '@/shared/ui/skeleton/Skeleton';
@@ -13,15 +13,6 @@ import styles from './AuctionBidHistorySection.module.scss';
 interface AuctionBidHistorySectionProps {
   auctionUuid: string;
   currencyCode: string;
-}
-
-function getTraceId(error: unknown) {
-  if (!(error instanceof HttpError) || !error.body) return undefined;
-  if (typeof error.body !== 'object') return undefined;
-
-  const traceId = (error.body as { trace_id?: unknown }).trace_id;
-
-  return typeof traceId === 'string' ? traceId : undefined;
 }
 
 function HistorySkeleton() {
@@ -54,7 +45,7 @@ export function AuctionBidHistorySection({
   }
 
   if (historyQuery.isError) {
-    const traceId = getTraceId(historyQuery.error);
+    const errorView = presentAuctionBidHistoryError(historyQuery.error);
 
     return (
       <section className={styles.section}>
@@ -65,11 +56,11 @@ export function AuctionBidHistorySection({
               Попробовать снова
             </Button>
           }
-          description="Основные данные аукциона доступны. Повторите загрузку истории."
+          description={errorView.description}
           title="Не удалось загрузить историю ставок"
         />
-        {traceId ? (
-          <p className={styles.traceId}>Request ID: {traceId}</p>
+        {errorView.traceId ? (
+          <p className={styles.traceId}>Request ID: {errorView.traceId}</p>
         ) : null}
       </section>
     );

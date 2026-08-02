@@ -123,9 +123,6 @@ export function AuctionDetailsPage() {
   }
 
   const auction = presentAuctionDetail(auctionQuery.data);
-  const trading = auctionQuery.data.trading;
-  const canPlaceBid =
-    trading.can_set_bet === true && trading.status === 'Auction';
 
   return (
     <article className={styles.page}>
@@ -232,14 +229,14 @@ export function AuctionDetailsPage() {
             <strong>{auction.endTime}</strong>
           </div>
           <Facts facts={auction.tradeFacts} />
-          {canPlaceBid ? (
+          {auction.bidPlacement.isAvailable ? (
             <PlaceAuctionBidForm
               auctionUuid={auctionUuid}
               currencyCode={auction.currencyCode}
               key={auctionUuid}
-              max={trading.price?.max}
-              min={trading.price?.min}
-              step={trading.price?.step}
+              max={auction.bidPlacement.max}
+              min={auction.bidPlacement.min}
+              step={auction.bidPlacement.step}
             />
           ) : (
             <p className={styles.bidUnavailable}>Установка ставки недоступна</p>

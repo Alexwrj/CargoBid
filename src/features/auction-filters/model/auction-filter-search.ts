@@ -68,17 +68,33 @@ export const auctionFilterSearchSchema = z.object({
 
 export type AuctionFilterSearch = z.infer<typeof auctionFilterSearchSchema>;
 
-export interface AuctionFilterFormValues {
-  auctionStatus: '' | (typeof filterableAuctionStatuses)[number];
-  bodyType: string;
-  cargoNum: string;
-  isAvailable: '' | 'false' | 'true';
-  loadCity: string;
-  unloadCity: string;
-  userStatus: '' | (typeof userStatuses)[number];
-  weightFrom: null | number;
-  weightTo: null | number;
-}
+export const auctionFilterFormSchema = z
+  .object({
+    auctionStatus: z.union([z.literal(''), z.enum(filterableAuctionStatuses)]),
+    bodyType: z.string(),
+    cargoNum: z.string(),
+    isAvailable: z.union([
+      z.literal(''),
+      z.literal('false'),
+      z.literal('true'),
+    ]),
+    loadCity: z.string(),
+    unloadCity: z.string(),
+    userStatus: z.union([z.literal(''), z.enum(userStatuses)]),
+    weightFrom: z.number().nonnegative().nullable(),
+    weightTo: z.number().nonnegative().nullable(),
+  })
+  .superRefine(({ weightFrom, weightTo }, context) => {
+    if (weightFrom !== null && weightTo !== null && weightTo < weightFrom) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Максимальный вес должен быть не меньше минимального',
+        path: ['weightTo'],
+      });
+    }
+  });
+
+export type AuctionFilterFormValues = z.infer<typeof auctionFilterFormSchema>;
 
 export const auctionsPerPage = 6;
 
