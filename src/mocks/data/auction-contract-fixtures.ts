@@ -599,20 +599,11 @@ export const auctionBidHistoryItems = [
       {
         id: 202,
         auction_id: 1048,
-        subscriber_id: 48,
-        organization_name: 'Волга Карго',
+        subscriber_id: 999,
+        organization_name: 'Демо-перевозчик · Вы',
         created_at: dateAfter(-15),
         price_with_vat: 60_000,
         price_no_vat: 50_000,
-      },
-      {
-        id: 201,
-        auction_id: 1048,
-        subscriber_id: 48,
-        organization_name: 'Волга Карго',
-        created_at: dateAfter(-25),
-        price_with_vat: 58_000,
-        price_no_vat: 48_333.33,
       },
     ],
   },
@@ -656,17 +647,7 @@ export const auctionBidHistoryItems = [
   },
   {
     auctionUuid: '550e8400-e29b-41d4-a716-446655440005',
-    bets: [
-      {
-        id: 501,
-        auction_id: 1019,
-        subscriber_id: 72,
-        organization_name: 'Урал Логистик',
-        created_at: dateAfter(-10),
-        price_with_vat: 43_000,
-        price_no_vat: 35_833.33,
-      },
-    ],
+    bets: [],
   },
   {
     auctionUuid: '550e8400-e29b-41d4-a716-446655440006',

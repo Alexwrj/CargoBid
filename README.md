@@ -23,12 +23,34 @@ npm run api:generate
 npm run lint
 npm run typecheck
 npm run test:run
+npm run test:unit
+npm run test:scenario
 npm run format:check
 npm run build
 ```
 
 `npm test` запускает Vitest в watch-режиме, `npm run preview` — локальный
 просмотр production build, а `npm run format` форматирует рукописные файлы.
+
+## Уровни тестирования
+
+Тесты разделены по наблюдаемой границе, а не по размеру файла:
+
+```text
+src/test/unit/       чистые функции и схемы без запуска приложения
+src/test/scenario/   пользовательские сценарии через RTL, router, Query и MSW
+e2e/                 реальные браузерные тесты
+```
+
+`npm run test:unit` и `npm run test:scenario` запускают уровни отдельно,
+`npm run test:run` — весь текущий Vitest-набор. Общие scenario-helper и setup
+остаются в `src/test`, чтобы не дублировать composition root тестов.
+Unit-команда использует отдельную Node-конфигурацию без jsdom и MSW bootstrap;
+scenario-команда — основную конфигурацию с browser-like окружением.
+
+E2E runner пока не выбран и не подменяется jsdom-проверками. Каталог `e2e`
+фиксирует отдельную границу для будущего Playwright или другого browser runner;
+команда `test:e2e` появится одновременно с первым реальным E2E-сценарием.
 
 ## OpenAPI и генерация типов
 
@@ -270,12 +292,13 @@ RHF draft → Apply → URL search → OpenAPI request → query key → MSW/bac
 поля `AuctionListRequest`. Например:
 
 ```text
-/auctions?auctionStatus=Auction&userStatus=Leading&loadCity=Пермь&page=2
+/auctions?auctionStatus=Auction&auctionType=FixPrice&loadCity=Екатеринбург&page=1
 ```
 
 На текущем этапе поддержаны:
 
 - `auctionStatus` → контрактный числовой `statuses`;
+- `auctionType` → контрактный массив `auc_type`;
 - `userStatus` → контрактный `status`;
 - `loadCity`, `unloadCity`;
 - `cargoNum`, `bodyType`;
@@ -303,9 +326,18 @@ Query key. Presenter адаптирует optional-поля `AuctionShowResponse
 Страница показывает маршрут, груз и требования к транспорту, организатора,
 условия оплаты, сводку торгов и независимую историю ставок. Если контрактные
 `trading.can_set_bet` и `trading.status` разрешают участие, в торговом блоке
-отображается форма установки ставки.
+отображается действие, соответствующее типу аукциона.
 
-Черновик суммы принадлежит React Hook Form, проверяется Zod-схемой и не меняет
+Для `FixPrice` цена не редактируется: UI показывает единственную кнопку
+«Принять цену» и отправляет зафиксированное контрактом значение через тот же
+`POST /auctions/{auctionUuid}/bets`. После принятия mock переводит предложение в
+`WaitDeal`, закрывает повторное действие и показывает статус `Accepted` в
+деталях. В list DTO такого статуса нет, поэтому согласованное состояние списка
+представлено контрактным `Confirmed`. История остаётся доступной: до принятия
+она показывает пустое состояние, после принятия — зафиксированную операцию.
+
+Для аукционов на повышение и понижение черновик суммы принадлежит React Hook
+Form, проверяется Zod-схемой и не меняет
 серверные данные до успешного `POST /auctions/{auctionUuid}/bets`. Форма
 проверяет число, положительность и прямые `min_price`/`max_price`, но намеренно
 не вычисляет следующую цену и не проверяет кратность `step`: база шага и правила

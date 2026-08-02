@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { createAuctionListHandler } from '@/mocks/handlers/auctions';
 import { server } from '@/mocks/server';
 
-import { renderApp } from './render';
+import { renderApp } from '../render';
 
 describe('auction list', () => {
   it('renders contract data and opens an auction from the card', async () => {
@@ -122,6 +122,25 @@ describe('auction list', () => {
     expect(
       screen.queryByRole('link', {
         name: 'Открыть CB-000001048: Казань → Санкт-Петербург',
+      }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('filters by the contract auction type stored in the URL', async () => {
+    await renderApp({ route: '/auctions?auctionType=FixPrice' });
+
+    expect(
+      screen.getByRole('combobox', { name: 'Тип аукциона' }),
+    ).toHaveTextContent('Фиксированная цена');
+    expect(
+      await screen.findByRole('link', {
+        name: 'Открыть CB-000001019: Екатеринбург → Тюмень',
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Найдено: 1 аукцион')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', {
+        name: 'Открыть CB-000001059: Пермь → Москва',
       }),
     ).not.toBeInTheDocument();
   });

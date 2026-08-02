@@ -8,7 +8,7 @@ import {
 } from '@/mocks/handlers/auctions';
 import { server } from '@/mocks/server';
 
-import { renderApp } from './render';
+import { renderApp } from '../render';
 
 const leadingAuctionUuid = '550e8400-e29b-41d4-a716-446655440001';
 const losingAuctionUuid = '550e8400-e29b-41d4-a716-446655440002';
@@ -55,6 +55,7 @@ describe('auction details', () => {
     expect(points[2]).toHaveTextContent('40 м³');
     expect(screen.getByText('1 420 км')).toBeInTheDocument();
     expect(screen.getByText('36 ₽')).toBeInTheDocument();
+
     expect(
       screen.queryByText('Установка ставки будет доступна на следующем этапе.'),
     ).not.toBeInTheDocument();
@@ -171,17 +172,19 @@ describe('auction details', () => {
     const table = await screen.findByRole('table');
     const rows = within(table).getAllByRole('row');
 
-    expect(rows).toHaveLength(4);
+    expect(rows).toHaveLength(3);
     expect(rows[1]).toHaveTextContent('Балтийский Транзит');
     expect(rows[1]).toHaveTextContent('61 000 ₽');
     expect(rows[1]).toHaveTextContent('Встречная');
-    expect(rows[2]).toHaveTextContent('Волга Карго');
+    expect(rows[2]).toHaveTextContent('Демо-перевозчик · Вы');
     expect(rows[2]).toHaveTextContent('60 000 ₽');
-    expect(rows[3]).toHaveTextContent('58 000 ₽');
+    expect(rows[2]).toHaveTextContent('Ваша');
+    expect(rows[2]).toHaveAttribute('data-own-bid', 'true');
+    expect(rows[1]).not.toHaveAttribute('data-own-bid');
+    expect(within(table).queryByText('58 000 ₽')).not.toBeInTheDocument();
     expect(
       within(table).queryByText('Северный Экспресс'),
     ).not.toBeInTheDocument();
-    expect(within(table).queryByText('Вы')).not.toBeInTheDocument();
   });
 
   it('keeps auction details visible while bid history is loading', async () => {

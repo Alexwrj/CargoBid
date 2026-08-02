@@ -5,7 +5,7 @@ import {
   formatNumber,
   formatTimeUntil,
   formatUnit,
-} from '@/shared/lib/formatters';
+} from '@/shared/utils/formatters';
 
 import {
   presentAuctionStatus,
@@ -21,8 +21,10 @@ export interface AuctionDetailFact {
 
 export interface AuctionBidPlacementView {
   isAvailable: boolean;
+  kind: 'accept-fixed' | 'bid';
   max?: number;
   min?: number;
+  price?: number;
   step?: number;
 }
 
@@ -46,9 +48,11 @@ export interface AuctionDetailView {
   currencyCode: string;
   endTime: string;
   organizerFacts: AuctionDetailFact[];
+  ownBidAmount?: number;
   paymentFacts: AuctionDetailFact[];
   reference: string;
   routePoints: AuctionRoutePointView[];
+  showDeadline: boolean;
   showBidHistory: boolean;
   tradeFacts: AuctionDetailFact[];
   userStatus: AuctionStatusView;
@@ -155,14 +159,17 @@ export function presentAuctionDetail(
   const currencyCode = payment.currency_code ?? '643';
   const firstRouteCargo = response.routes.find((point) => point.cargo)?.cargo;
   const car = cargo.car;
+  const isFixedPrice = main.auc_type === 'FixPrice';
 
   return {
     auctionStatus: presentAuctionStatus(trading.status),
     auctionType: presentAuctionType(main.auc_type),
     bidPlacement: {
       isAvailable: trading.can_set_bet === true && trading.status === 'Auction',
+      kind: isFixedPrice ? 'accept-fixed' : 'bid',
       max: trading.price?.max ?? undefined,
       min: trading.price?.min ?? undefined,
+      price: isFixedPrice ? (trading.price?.current ?? undefined) : undefined,
       step: trading.price?.step ?? undefined,
     },
     cargoFacts: compactFacts([
@@ -204,6 +211,7 @@ export function presentAuctionDetail(
       { label: 'ИНН', value: response.organizer.organization_inn },
       { label: 'КПП', value: response.organizer.organization_kpp },
     ]),
+    ownBidAmount: trading.your?.last_bet ?? undefined,
     paymentFacts: compactFacts([
       { label: 'Форма оплаты', value: payment.form },
       { label: 'Условия оплаты', value: payment.condition ?? undefined },
@@ -220,10 +228,11 @@ export function presentAuctionDetail(
       main.cargo_num ??
       (main.id === undefined ? 'Без номера' : String(main.id)),
     routePoints: presentRoutePoints(response),
+    showDeadline: !isFixedPrice || trading.status === 'Auction',
     showBidHistory: !(response.hide_bets_history || trading.hide_bets_history),
     tradeFacts: compactFacts([
       {
-        label: 'Текущая ставка',
+        label: isFixedPrice ? 'Фиксированная цена' : 'Текущая ставка',
         value:
           trading.price?.current == null
             ? undefined
@@ -232,12 +241,12 @@ export function presentAuctionDetail(
       {
         label: 'Начальная ставка',
         value:
-          trading.price?.start == null
+          isFixedPrice || trading.price?.start == null
             ? undefined
             : formatMoney(trading.price.start, currencyCode),
       },
       {
-        label: 'Ваша ставка',
+        label: isFixedPrice ? 'Цена принята вами' : 'Ваша ставка',
         value:
           trading.your?.last_bet == null
             ? undefined
@@ -267,7 +276,7 @@ export function presentAuctionDetail(
               : undefined,
       },
       {
-        label: 'Возможность ставки',
+        label: isFixedPrice ? 'Возможность принять цену' : 'Возможность ставки',
         value:
           trading.can_set_bet === undefined
             ? undefined

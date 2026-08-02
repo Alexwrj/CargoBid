@@ -32,6 +32,13 @@ const auctionStatusOptions = [
   { label: 'Отменён', value: 'Canceled' },
 ] as const;
 
+const auctionTypeOptions = [
+  { label: 'Заявочный', value: 'Request' },
+  { label: 'На повышение', value: 'Up' },
+  { label: 'На понижение', value: 'Down' },
+  { label: 'Фиксированная цена', value: 'FixPrice' },
+] as const;
+
 const userStatusOptions = [
   { label: 'Не участвую', value: 'NotParticipating' },
   { label: 'Лидирую', value: 'Leading' },
@@ -172,6 +179,19 @@ export function AuctionFiltersForm({
               onValueChange={(value) => field.onChange(value ?? '')}
               options={auctionStatusOptions}
               placeholder="Любой статус"
+              value={field.value || null}
+            />
+          )}
+        />
+        <Controller
+          control={control}
+          name="auctionType"
+          render={({ field }) => (
+            <SelectField
+              label="Тип аукциона"
+              onValueChange={(value) => field.onChange(value ?? '')}
+              options={auctionTypeOptions}
+              placeholder="Любой тип"
               value={field.value || null}
             />
           )}

@@ -7,6 +7,7 @@ import {
   presentAuctionDetail,
   type AuctionDetailFact,
 } from '@/entities/auction/model/auction-detail-presenter';
+import { AcceptFixedPrice } from '@/features/place-auction-bid/ui/AcceptFixedPrice';
 import { PlaceAuctionBidForm } from '@/features/place-auction-bid/ui/PlaceAuctionBidForm';
 import { Badge } from '@/shared/ui/badge/Badge';
 import { Button } from '@/shared/ui/button/Button';
@@ -218,28 +219,45 @@ export function AuctionDetailsPage() {
             <AuctionBidHistorySection
               auctionUuid={auctionUuid}
               currencyCode={auction.currencyCode}
+              ownBidAmount={auction.ownBidAmount}
             />
           ) : null}
         </div>
 
         <aside className={styles.tradeSummary} aria-labelledby="trade-title">
           <h2 id="trade-title">Торги</h2>
-          <div className={styles.tradeDeadline}>
-            <span>До конца торгов</span>
-            <strong>{auction.endTime}</strong>
-          </div>
+          {auction.showDeadline ? (
+            <div className={styles.tradeDeadline}>
+              <span>До конца торгов</span>
+              <strong>{auction.endTime}</strong>
+            </div>
+          ) : null}
           <Facts facts={auction.tradeFacts} />
           {auction.bidPlacement.isAvailable ? (
-            <PlaceAuctionBidForm
-              auctionUuid={auctionUuid}
-              currencyCode={auction.currencyCode}
-              key={auctionUuid}
-              max={auction.bidPlacement.max}
-              min={auction.bidPlacement.min}
-              step={auction.bidPlacement.step}
-            />
+            auction.bidPlacement.kind === 'accept-fixed' &&
+            auction.bidPlacement.price !== undefined ? (
+              <AcceptFixedPrice
+                auctionUuid={auctionUuid}
+                currencyCode={auction.currencyCode}
+                key={auctionUuid}
+                price={auction.bidPlacement.price}
+              />
+            ) : (
+              <PlaceAuctionBidForm
+                auctionUuid={auctionUuid}
+                currencyCode={auction.currencyCode}
+                key={auctionUuid}
+                max={auction.bidPlacement.max}
+                min={auction.bidPlacement.min}
+                step={auction.bidPlacement.step}
+              />
+            )
           ) : (
-            <p className={styles.bidUnavailable}>Установка ставки недоступна</p>
+            <p className={styles.bidUnavailable}>
+              {auction.bidPlacement.kind === 'accept-fixed'
+                ? 'Цена уже принята или предложение недоступно'
+                : 'Установка ставки недоступна'}
+            </p>
           )}
         </aside>
       </div>

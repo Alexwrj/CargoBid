@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { formatMoney } from '@/shared/lib/formatters';
+import { formatMoney } from '@/shared/utils/formatters';
 
 interface PlaceAuctionBidSchemaOptions {
   currencyCode: string;

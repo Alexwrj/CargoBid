@@ -5,9 +5,10 @@ import { describe, expect, it } from 'vitest';
 import { createAuctionSetBetHandler } from '@/mocks/handlers/auctions';
 import { server } from '@/mocks/server';
 
-import { renderApp } from './render';
+import { renderApp } from '../render';
 
 const activeAuctionUuid = '550e8400-e29b-41d4-a716-446655440002';
+const fixedPriceAuctionUuid = '550e8400-e29b-41d4-a716-446655440005';
 const finishedAuctionUuid = '550e8400-e29b-41d4-a716-446655440004';
 
 describe('place auction bid', () => {
@@ -165,5 +166,39 @@ describe('place auction bid', () => {
     ).not.toBeInTheDocument();
     expect(screen.getByText('Установка ставки недоступна')).toBeInTheDocument();
     expect(screen.getByText('Завершён')).toBeInTheDocument();
+  });
+
+  it('accepts a fixed price without exposing a bid amount field', async () => {
+    const user = userEvent.setup();
+
+    await renderApp({ route: `/auctions/${fixedPriceAuctionUuid}` });
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Аукцион № CB-000001019',
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText('Фиксированная цена')).toHaveLength(2);
+    expect(
+      screen.queryByRole('textbox', { name: 'Сумма ставки' }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText('История ставок')).toBeInTheDocument();
+    expect(await screen.findByText('Ставок пока нет')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Принять цену' }));
+
+    expect(await screen.findByText('Ожидание сделки')).toBeInTheDocument();
+    expect(screen.getByText('Предложение принято')).toBeInTheDocument();
+    expect(screen.getByText('Цена принята вами')).toBeInTheDocument();
+    expect(await screen.findByText('Демо-перевозчик')).toBeInTheDocument();
+    expect(screen.queryByText('Ставок пока нет')).not.toBeInTheDocument();
+    expect(screen.queryByText('Ваша ставка')).not.toBeInTheDocument();
+    expect(screen.queryByText('До конца торгов')).not.toBeInTheDocument();
+    expect(
+      screen.getByText('Цена уже принята или предложение недоступно'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Принять цену' }),
+    ).not.toBeInTheDocument();
   });
 });

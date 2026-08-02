@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createQueryClient } from '@/app/providers/query-client';
 
-import { renderApp, renderWithProviders } from './render';
+import { renderApp, renderWithProviders } from '../render';
 
 function QueryClientProbe() {
   const queryClient = useQueryClient();

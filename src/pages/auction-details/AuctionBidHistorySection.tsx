@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import classNames from 'classnames';
 
 import { auctionBidHistoryQueryOptions } from '@/entities/auction/api/auction-bid-history-query';
 import { presentAuctionBidHistoryError } from '@/entities/auction/model/auction-bid-history-error';
@@ -13,6 +14,7 @@ import styles from './AuctionBidHistorySection.module.scss';
 interface AuctionBidHistorySectionProps {
   auctionUuid: string;
   currencyCode: string;
+  ownBidAmount?: number;
 }
 
 function HistorySkeleton() {
@@ -32,6 +34,7 @@ function HistorySkeleton() {
 export function AuctionBidHistorySection({
   auctionUuid,
   currencyCode,
+  ownBidAmount,
 }: AuctionBidHistorySectionProps) {
   const historyQuery = useQuery(auctionBidHistoryQueryOptions(auctionUuid));
 
@@ -66,7 +69,11 @@ export function AuctionBidHistorySection({
     );
   }
 
-  const history = presentAuctionBidHistory(historyQuery.data, currencyCode);
+  const history = presentAuctionBidHistory(
+    historyQuery.data,
+    currencyCode,
+    ownBidAmount,
+  );
 
   if (history.length === 0) {
     return (
@@ -98,7 +105,11 @@ export function AuctionBidHistorySection({
           </thead>
           <tbody>
             {history.map((bet) => (
-              <tr key={bet.id}>
+              <tr
+                className={classNames(bet.isOwn && styles.ownBid)}
+                data-own-bid={bet.isOwn || undefined}
+                key={bet.id}
+              >
                 <td data-label="Участник">{bet.participant}</td>
                 <td data-label="Ставка">
                   {bet.amount ? (

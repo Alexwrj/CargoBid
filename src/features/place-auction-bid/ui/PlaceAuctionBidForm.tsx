@@ -10,7 +10,7 @@ import {
   type PlaceAuctionBidFormInput,
   type PlaceAuctionBidFormOutput,
 } from '@/features/place-auction-bid/model/place-auction-bid-schema';
-import { formatMoney } from '@/shared/lib/formatters';
+import { formatMoney } from '@/shared/utils/formatters';
 import { Button } from '@/shared/ui/button/Button';
 import { TextField } from '@/shared/ui/text-field/TextField';
 

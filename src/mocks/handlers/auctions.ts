@@ -84,6 +84,15 @@ function matchesAuctionListRequest(
     return false;
   }
 
+  if (
+    request.auc_type &&
+    (!item.main?.auc_type ||
+      item.main.auc_type === 'Unknown' ||
+      !request.auc_type.includes(item.main.auc_type))
+  ) {
+    return false;
+  }
+
   if (!matchesSubstring(item.route?.load?.city, request.load_city))
     return false;
   if (!matchesSubstring(item.route?.unload?.city, request.unload_city)) {
@@ -231,7 +240,6 @@ function applyBidToMockState({
 
   if (isOwn) {
     detail.trading.is_bidder = true;
-    detail.trading.status_mobile = 'Leading';
     detail.trading.your = {
       bet: true,
       last_bet: amount,
@@ -239,8 +247,20 @@ function applyBidToMockState({
       win: false,
     };
     listItem.trading.is_bidder = true;
-    listItem.trading.status_mobile = 'Leading';
     listItem.trading.your = { bet: true, last_bet: amount };
+
+    if (auctionType === 'FixPrice') {
+      detail.trading.can_set_bet = false;
+      detail.trading.status = 'WaitDeal';
+      detail.trading.status_mobile = 'Accepted';
+      listItem.trading.can_set_bet = false;
+      listItem.trading.is_available = false;
+      listItem.trading.status = 'WaitDeal';
+      listItem.trading.status_mobile = 'Confirmed';
+    } else {
+      detail.trading.status_mobile = 'Leading';
+      listItem.trading.status_mobile = 'Leading';
+    }
   } else if (detail.trading.your?.bet) {
     detail.trading.status_mobile = 'Losing';
     listItem.trading.status_mobile = 'Losing';

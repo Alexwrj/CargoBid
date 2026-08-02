@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { renderApp } from './render';
+import { renderApp } from '../render';
 
 describe('application routing', () => {
   it('redirects the root route to the auctions page', async () => {

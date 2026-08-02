@@ -1,5 +1,5 @@
 import type { ListBetsResponse } from '@/shared/api/generated/auctions/bets/listBets';
-import { formatDateTime, formatMoney } from '@/shared/lib/formatters';
+import { formatDateTime, formatMoney } from '@/shared/utils/formatters';
 
 export interface AuctionBidHistoryStatus {
   label: string;
@@ -11,6 +11,7 @@ export interface AuctionBidHistoryItemView {
   dateTime?: string;
   displayTime?: string;
   id: string;
+  isOwn: boolean;
   participant: string;
   statuses: AuctionBidHistoryStatus[];
   vatLabel?: string;
@@ -44,9 +45,11 @@ function getAmount(
 
 function getStatuses(
   bet: ListBetsResponse['bets'][number],
+  isOwn: boolean,
 ): AuctionBidHistoryStatus[] {
   const statuses: AuctionBidHistoryStatus[] = [];
 
+  if (isOwn) statuses.push({ label: 'Ваша', tone: 'success' });
   if (bet.is_win) statuses.push({ label: 'Победившая', tone: 'success' });
   if (bet.is_counter) statuses.push({ label: 'Встречная', tone: 'info' });
   if (bet.is_rejected) statuses.push({ label: 'Отклонена', tone: 'danger' });
@@ -57,16 +60,30 @@ function getStatuses(
 export function presentAuctionBidHistory(
   response: ListBetsResponse,
   currencyCode: string,
+  ownBidAmount?: number,
 ): AuctionBidHistoryItemView[] {
-  return response.bets.map((bet, index) => ({
-    ...getAmount(bet, currencyCode),
-    dateTime: bet.created_at,
-    displayTime: bet.created_at ? formatDateTime(bet.created_at) : undefined,
-    id: bet.id === undefined ? `bet-${index}` : String(bet.id),
-    participant:
-      bet.organization_name?.trim() ||
-      bet.contact_name?.trim() ||
-      'Участник не указан',
-    statuses: getStatuses(bet),
-  }));
+  return response.bets.map((bet, index) => {
+    const amount =
+      bet.price_with_vat ??
+      bet.price_info?.price_with_vat ??
+      bet.price_no_vat ??
+      bet.price_info?.price_no_vat;
+    const isOwn =
+      ownBidAmount !== undefined &&
+      amount != null &&
+      Math.round(amount * 100) === Math.round(ownBidAmount * 100);
+
+    return {
+      ...getAmount(bet, currencyCode),
+      dateTime: bet.created_at,
+      displayTime: bet.created_at ? formatDateTime(bet.created_at) : undefined,
+      id: bet.id === undefined ? `bet-${index}` : String(bet.id),
+      isOwn,
+      participant:
+        bet.organization_name?.trim() ||
+        bet.contact_name?.trim() ||
+        'Участник не указан',
+      statuses: getStatuses(bet, isOwn),
+    };
+  });
 }

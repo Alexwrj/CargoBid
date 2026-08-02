@@ -4,7 +4,7 @@ import {
   formatMoney,
   formatTimeUntil,
   formatUnit,
-} from '@/shared/lib/formatters';
+} from '@/shared/utils/formatters';
 import {
   presentAuctionStatus,
   presentAuctionType,
@@ -80,6 +80,7 @@ export function presentAuctionListItem(
   const lastBet = trading?.your?.last_bet;
   const currencyCode = payment?.currency_code ?? '643';
   const auctionStatus = presentAuctionStatus(trading?.status);
+  const isFixedPrice = main?.auc_type === 'FixPrice';
 
   return {
     actionLabel: 'Открыть аукцион',
@@ -92,8 +93,9 @@ export function presentAuctionListItem(
       currentPrice === undefined
         ? 'Цена не указана'
         : formatMoney(currentPrice, currencyCode),
-    currentPriceCaption:
-      trading?.bid_measurement_type === 'PerKm'
+    currentPriceCaption: isFixedPrice
+      ? 'Фиксированная цена'
+      : trading?.bid_measurement_type === 'PerKm'
         ? 'Текущая ставка за км'
         : 'Текущая ставка за рейс',
     endTime: formatTimeUntil(trading?.stop_time),
@@ -109,6 +111,6 @@ export function presentAuctionListItem(
     yourBet:
       lastBet == null
         ? undefined
-        : `Ваша ставка: ${formatMoney(lastBet, currencyCode)}`,
+        : `${isFixedPrice ? 'Цена принята вами' : 'Ваша ставка'}: ${formatMoney(lastBet, currencyCode)}`,
   };
 }

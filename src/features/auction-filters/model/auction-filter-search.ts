@@ -14,6 +14,8 @@ const userStatuses = [
   'Winner',
 ] as const;
 
+const auctionTypes = ['Request', 'Up', 'Down', 'FixPrice'] as const;
+
 function optionalString() {
   return z.preprocess(
     (value) =>
@@ -55,6 +57,7 @@ function optionalBoolean() {
 
 export const auctionFilterSearchSchema = z.object({
   auctionStatus: z.enum(filterableAuctionStatuses).optional().catch(undefined),
+  auctionType: z.enum(auctionTypes).optional().catch(undefined),
   bodyType: optionalString(),
   cargoNum: optionalString(),
   isAvailable: optionalBoolean(),
@@ -71,6 +74,7 @@ export type AuctionFilterSearch = z.infer<typeof auctionFilterSearchSchema>;
 export const auctionFilterFormSchema = z
   .object({
     auctionStatus: z.union([z.literal(''), z.enum(filterableAuctionStatuses)]),
+    auctionType: z.union([z.literal(''), z.enum(auctionTypes)]),
     bodyType: z.string(),
     cargoNum: z.string(),
     isAvailable: z.union([
@@ -104,6 +108,7 @@ export function areAuctionFilterSearchEqual(
 ) {
   return (
     left.auctionStatus === right.auctionStatus &&
+    left.auctionType === right.auctionType &&
     left.bodyType === right.bodyType &&
     left.cargoNum === right.cargoNum &&
     left.isAvailable === right.isAvailable &&
@@ -125,6 +130,7 @@ export function searchToAuctionListRequest(
     ...(search.auctionStatus
       ? { statuses: [auctionStatusIds[search.auctionStatus]] }
       : {}),
+    ...(search.auctionType ? { auc_type: [search.auctionType] } : {}),
     ...(search.bodyType ? { body_types: [search.bodyType] } : {}),
     ...(search.cargoNum ? { cargo_num: search.cargoNum } : {}),
     ...(search.isAvailable === undefined
@@ -145,6 +151,7 @@ export function searchToFilterFormValues(
 ): AuctionFilterFormValues {
   return {
     auctionStatus: search.auctionStatus ?? '',
+    auctionType: search.auctionType ?? '',
     bodyType: search.bodyType ?? '',
     cargoNum: search.cargoNum ?? '',
     isAvailable:
@@ -166,6 +173,7 @@ export function filterFormValuesToSearch(
 ): AuctionFilterSearch {
   return auctionFilterSearchSchema.parse({
     auctionStatus: values.auctionStatus,
+    auctionType: values.auctionType,
     bodyType: values.bodyType,
     cargoNum: values.cargoNum,
     isAvailable: values.isAvailable,

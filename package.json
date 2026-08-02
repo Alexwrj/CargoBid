@@ -12,6 +12,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:unit": "vitest run --config vitest.unit.config.ts",
+    "test:scenario": "vitest run src/test/scenario",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
