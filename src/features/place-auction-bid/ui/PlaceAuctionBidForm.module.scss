@@ -1,0 +1,31 @@
+.form {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-surface-default);
+  border-radius: var(--radius-control);
+  color: var(--color-text-primary);
+}
+
+.feedback {
+  margin: 0;
+  font-size: var(--font-size-body-small);
+  line-height: var(--line-height-body);
+}
+
+.success {
+  color: var(--color-success);
+  font-weight: var(--font-weight-semibold);
+}
+
+.error {
+  color: var(--color-danger);
+}
+
+.trace-id {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-text-tertiary);
+  font-family: var(--font-family-metric);
+  font-size: var(--font-size-caption);
+}

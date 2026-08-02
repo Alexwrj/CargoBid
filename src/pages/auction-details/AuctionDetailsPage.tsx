@@ -7,6 +7,7 @@ import {
   presentAuctionDetail,
   type AuctionDetailFact,
 } from '@/entities/auction/model/auction-detail-presenter';
+import { PlaceAuctionBidForm } from '@/features/place-auction-bid/ui/PlaceAuctionBidForm';
 import { Badge } from '@/shared/ui/badge/Badge';
 import { Button } from '@/shared/ui/button/Button';
 import { Skeleton } from '@/shared/ui/skeleton/Skeleton';
@@ -122,6 +123,9 @@ export function AuctionDetailsPage() {
   }
 
   const auction = presentAuctionDetail(auctionQuery.data);
+  const trading = auctionQuery.data.trading;
+  const canPlaceBid =
+    trading.can_set_bet === true && trading.status === 'Auction';
 
   return (
     <article className={styles.page}>
@@ -228,6 +232,18 @@ export function AuctionDetailsPage() {
             <strong>{auction.endTime}</strong>
           </div>
           <Facts facts={auction.tradeFacts} />
+          {canPlaceBid ? (
+            <PlaceAuctionBidForm
+              auctionUuid={auctionUuid}
+              currencyCode={auction.currencyCode}
+              key={auctionUuid}
+              max={trading.price?.max}
+              min={trading.price?.min}
+              step={trading.price?.step}
+            />
+          ) : (
+            <p className={styles.bidUnavailable}>Установка ставки недоступна</p>
+          )}
         </aside>
       </div>
     </article>

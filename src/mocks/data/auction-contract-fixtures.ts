@@ -12,17 +12,54 @@ function dateAfter(minutes: number) {
 }
 
 const detailSettingsByAuctionUuid = {
-  '550e8400-e29b-41d4-a716-446655440001': { distance: 1_400, step: 500 },
-  '550e8400-e29b-41d4-a716-446655440002': { distance: 1_420, step: 1_000 },
-  '550e8400-e29b-41d4-a716-446655440003': { distance: 650, step: 1_000 },
-  '550e8400-e29b-41d4-a716-446655440004': { distance: 780, step: 500 },
+  '550e8400-e29b-41d4-a716-446655440001': {
+    distance: 1_400,
+    max: 28_000,
+    min: 20_000,
+    step: 500,
+  },
+  '550e8400-e29b-41d4-a716-446655440002': {
+    distance: 1_420,
+    max: 100_000,
+    min: 62_000,
+    step: 1_000,
+  },
+  '550e8400-e29b-41d4-a716-446655440003': {
+    distance: 650,
+    max: undefined,
+    min: undefined,
+    step: 1_000,
+  },
+  '550e8400-e29b-41d4-a716-446655440004': {
+    distance: 780,
+    max: undefined,
+    min: undefined,
+    step: 500,
+  },
   '550e8400-e29b-41d4-a716-446655440005': {
     distance: 330,
+    max: 43_000,
+    min: 43_000,
     step: undefined,
   },
-  '550e8400-e29b-41d4-a716-446655440006': { distance: 760, step: 1_000 },
-  '550e8400-e29b-41d4-a716-446655440007': { distance: 450, step: 1_000 },
-  '550e8400-e29b-41d4-a716-446655440008': { distance: 280, step: 500 },
+  '550e8400-e29b-41d4-a716-446655440006': {
+    distance: 760,
+    max: undefined,
+    min: undefined,
+    step: 1_000,
+  },
+  '550e8400-e29b-41d4-a716-446655440007': {
+    distance: 450,
+    max: 100_000,
+    min: 42_000,
+    step: 1_000,
+  },
+  '550e8400-e29b-41d4-a716-446655440008': {
+    distance: 280,
+    max: 71_000,
+    min: 60_000,
+    step: 500,
+  },
 } as const;
 
 const organizerInns = [
@@ -336,10 +373,6 @@ export const auctionListItems = [
   },
 ] satisfies AuctionListItem[];
 
-export const auctionListStore = {
-  items: auctionListItems,
-};
-
 function createRoutePoint(
   item: AuctionListItem,
   operation: 'Loading' | 'Unloading',
@@ -423,6 +456,8 @@ function createAuctionDetail(
             start: trading.price.start,
             current: trading.price.current,
             current_no_vat: trading.price.current_no_vat,
+            max: detailSettings.max,
+            min: detailSettings.min,
             step: detailSettings.step,
             price_per_km: item.main?.price_per_km ?? undefined,
           }
@@ -499,10 +534,6 @@ export const auctionDetailItems = auctionListItems.map((item, index) => {
       }
     : detail;
 });
-
-export const auctionDetailStore = {
-  items: auctionDetailItems,
-};
 
 interface AuctionBidHistoryFixture {
   auctionUuid: string;
@@ -685,6 +716,34 @@ export const auctionBidHistoryItems = [
   },
 ] satisfies AuctionBidHistoryFixture[];
 
+function replaceItems<T>(target: T[], source: T[]) {
+  target.splice(0, target.length, ...structuredClone(source));
+}
+
+export const auctionMockState: {
+  bidHistories: AuctionBidHistoryFixture[];
+  details: AuctionResponse[];
+  listItems: AuctionListItem[];
+} = {
+  bidHistories: structuredClone(auctionBidHistoryItems),
+  details: structuredClone(auctionDetailItems),
+  listItems: structuredClone(auctionListItems),
+};
+
+export function resetAuctionMockState() {
+  replaceItems(auctionMockState.listItems, auctionListItems);
+  replaceItems(auctionMockState.details, auctionDetailItems);
+  replaceItems(auctionMockState.bidHistories, auctionBidHistoryItems);
+}
+
+export const auctionListStore = {
+  items: auctionMockState.listItems,
+};
+
+export const auctionDetailStore = {
+  items: auctionMockState.details,
+};
+
 export const auctionBidHistoryStore = {
-  items: auctionBidHistoryItems,
+  items: auctionMockState.bidHistories,
 };

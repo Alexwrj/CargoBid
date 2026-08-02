@@ -30,7 +30,9 @@ describe('auction details', () => {
     expect(screen.getByText('Вы лидируете')).toBeInTheDocument();
     expect(screen.getByText('Мороженое')).toBeInTheDocument();
     expect(screen.getAllByText('28 500 ₽')).toHaveLength(2);
-    expect(screen.queryByText('Сделать ставку')).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Сделать ставку' }),
+    ).toBeInTheDocument();
   });
 
   it('orders multiple route points by their contract row number', async () => {

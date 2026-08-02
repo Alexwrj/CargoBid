@@ -17,6 +17,8 @@ type AuctionResponse = components['schemas']['AuctionShowResponse'];
 type AuctionBet = components['schemas']['BetItem'];
 type AuctionBetsResponse = components['schemas']['BetListResponse'];
 type ProblemDetail = components['schemas']['ProblemDetail'];
+type SetBetRequest = components['schemas']['SetBetRequest'];
+type ValidationProblem = components['schemas']['ValidationProblem'];
 
 interface AuctionListHandlerOptions {
   items?: AuctionListItem[];
@@ -34,6 +36,11 @@ interface AuctionBidHistoryHandlerOptions {
   histories?: Array<{ auctionUuid: string; bets: AuctionBet[] }>;
   responseDelay?: number | 'infinite';
   scenario?: 'success' | 'error';
+}
+
+interface AuctionSetBetHandlerOptions {
+  responseDelay?: number | 'infinite';
+  scenario?: 'error' | 'stale' | 'success';
 }
 
 function normalizeText(value: string) {
@@ -124,6 +131,120 @@ async function readListRequest(request: Request) {
   const body = await request.text();
 
   return body ? (JSON.parse(body) as ListAuctionsRequestBody) : {};
+}
+
+async function readSetBetRequest(
+  request: Request,
+): Promise<Partial<SetBetRequest>> {
+  const body = await request.text();
+
+  return body ? (JSON.parse(body) as SetBetRequest) : {};
+}
+
+function validationResponse(message: string) {
+  return HttpResponse.json(
+    {
+      code: 'validation_failed',
+      errors: [{ code: 'invalid_value', field: 'price', message }],
+      message: 'Запрос содержит некорректные поля.',
+      title: 'Ошибка валидации',
+      trace_id: 'trace-auction-bet-422',
+    } satisfies ValidationProblem,
+    { status: 422 },
+  );
+}
+
+function findMutableAuction(
+  auctionUuid: string | readonly string[] | undefined,
+) {
+  const normalizedUuid = String(auctionUuid);
+  const detail = auctionDetailStore.items.find(
+    (item) => item.main.order_uid === normalizedUuid,
+  );
+  const listItem = auctionListStore.items.find(
+    (item) => item.main?.order_uid === normalizedUuid,
+  );
+  const history = auctionBidHistoryStore.items.find(
+    (item) => item.auctionUuid === normalizedUuid,
+  );
+
+  return { detail, history, listItem, normalizedUuid };
+}
+
+function roundMoney(value: number) {
+  return Math.round(value * 100) / 100;
+}
+
+function applyBidToMockState({
+  amount,
+  isOwn,
+  state,
+}: {
+  amount: number;
+  isOwn: boolean;
+  state: NonNullable<ReturnType<typeof findMutableAuction>>;
+}) {
+  const { detail, history, listItem } = state;
+
+  if (!detail || !history || !listItem) return;
+
+  const amountNoVat = roundMoney(amount / 1.2);
+  const previousIds = history.bets
+    .map((bet) => bet.id)
+    .filter((id): id is number => id !== undefined);
+  const nextId = Math.max(0, ...previousIds) + 1;
+  const step = detail.trading.price?.step ?? 0;
+  const auctionType = detail.main.auc_type;
+
+  history.bets.unshift({
+    auction_id: detail.main.id,
+    created_at: new Date().toISOString(),
+    id: nextId,
+    is_counter: !isOwn,
+    organization_name: isOwn ? 'Демо-перевозчик' : 'Конкурирующий перевозчик',
+    price_no_vat: amountNoVat,
+    price_with_vat: amount,
+    subscriber_id: isOwn ? 999 : 998,
+  });
+
+  detail.trading.price ??= {};
+  detail.trading.price.current = amount;
+  detail.trading.price.current_no_vat = amountNoVat;
+  if (detail.cargo.distance) {
+    detail.trading.price.price_per_km = amountNoVat / detail.cargo.distance;
+  }
+
+  listItem.trading ??= {};
+  listItem.trading.price ??= {};
+  listItem.trading.price.current = amount;
+  listItem.trading.price.current_no_vat = amountNoVat;
+  if (listItem.main && detail.cargo.distance) {
+    listItem.main.price_per_km = amountNoVat / detail.cargo.distance;
+  }
+
+  if (auctionType === 'Up' && step > 0) {
+    detail.trading.price.min = amount + step;
+  }
+  if (auctionType === 'Down' && step > 0) {
+    detail.trading.price.max = amount - step;
+  }
+
+  if (isOwn) {
+    detail.trading.is_bidder = true;
+    detail.trading.status_mobile = 'Leading';
+    detail.trading.your = {
+      bet: true,
+      last_bet: amount,
+      last_bet_with_vat: amount,
+      win: false,
+    };
+    listItem.trading.is_bidder = true;
+    listItem.trading.status_mobile = 'Leading';
+    listItem.trading.your = { bet: true, last_bet: amount };
+  } else if (detail.trading.your?.bet) {
+    detail.trading.status_mobile = 'Losing';
+    listItem.trading.status_mobile = 'Losing';
+  }
 }
 
 export function createAuctionListHandler({
@@ -273,11 +394,91 @@ export function createAuctionBidHistoryHandler({
   );
 }
 
+export function createAuctionSetBetHandler({
+  responseDelay,
+  scenario = 'success',
+}: AuctionSetBetHandlerOptions = {}) {
+  return http.post(
+    `${auctionApiUrl}/:auctionUuid/bets`,
+    async ({ params: { auctionUuid }, request }) => {
+      if (responseDelay !== undefined) {
+        await delay(responseDelay);
+      }
+
+      if (scenario === 'error') {
+        return HttpResponse.json(
+          {
+            code: 'auction_bet_unavailable',
+            message: 'Не удалось установить ставку',
+            title: 'Сервис временно недоступен',
+            trace_id: 'trace-auction-bet-503',
+          } satisfies ProblemDetail,
+          { status: 503 },
+        );
+      }
+
+      const state = findMutableAuction(auctionUuid);
+
+      if (!state.detail || !state.listItem || !state.history) {
+        return HttpResponse.json(
+          {
+            code: 'resource_not_found',
+            message: 'Аукцион не найден',
+            title: 'Не найдено',
+            trace_id: 'trace-auction-bet-404',
+          } satisfies ProblemDetail,
+          { status: 404 },
+        );
+      }
+
+      if (
+        state.detail.trading.can_set_bet !== true ||
+        state.detail.trading.status !== 'Auction'
+      ) {
+        return validationResponse('Установка ставки недоступна.');
+      }
+
+      if (scenario === 'stale') {
+        const current = state.detail.trading.price?.current ?? 0;
+        const step = state.detail.trading.price?.step ?? 1;
+        const competingAmount =
+          state.detail.main.auc_type === 'Down'
+            ? current - step
+            : current + step;
+
+        applyBidToMockState({ amount: competingAmount, isOwn: false, state });
+
+        return validationResponse(
+          'Сумма ставки больше не соответствует актуальным условиям.',
+        );
+      }
+
+      const { price } = await readSetBetRequest(request);
+
+      if (typeof price !== 'number' || !Number.isFinite(price) || price <= 0) {
+        return validationResponse('Сумма ставки должна быть положительной.');
+      }
+
+      const minimum = state.detail.trading.price?.min;
+      const maximum = state.detail.trading.price?.max;
+
+      if (minimum != null && price < minimum) {
+        return validationResponse(`Минимальная сумма ставки: ${minimum}.`);
+      }
+      if (maximum != null && price > maximum) {
+        return validationResponse(`Максимальная сумма ставки: ${maximum}.`);
+      }
+
+      applyBidToMockState({ amount: price, isOwn: true, state });
+
+      return new HttpResponse(null, { status: 200 });
+    },
+  );
+}
+
 export const auctionHandlers = [
   createAuctionListHandler(),
   createAuctionDetailHandler(),
   createAuctionBidHistoryHandler(),
-  http.post(`${auctionApiUrl}/:auctionUuid/bets`, () => {
-    return new HttpResponse(null, { status: 200 });
-  }),
+  createAuctionSetBetHandler(),
 ];
